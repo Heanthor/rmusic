@@ -1,15 +1,18 @@
 import music.Note;
 import music.Octave;
-import music.Pitch;
+import music.NoteValues;
 
-import static music.Pitch.*;
+import static music.NoteValues.*;
 
 /**
  * Test driver
  */
 public class Main {
     public static void main(String[] args) {
-        Note n = new Note(Pitch.C, Type.SHARP, new Octave(4));
-        System.out.println(n);
+        Note cs4 = new Note(NoteValues.C, Type.SHARP, new Octave(4));
+        Note db4 = new Note(NoteValues.D, Type.FLAT, new Octave(4));
+
+        System.out.println(cs4);
+        System.out.println(db4);
     }
 }
