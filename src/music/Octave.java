@@ -35,7 +35,7 @@ public class Octave implements Comparable<Octave>{
 
     @Override
     public int compareTo(Octave o) {
-        return o.octave - this.octave;
+        return this.octave - o.octave;
     }
 
     public int getNumberValue() {

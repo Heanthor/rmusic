@@ -77,8 +77,24 @@ public class Note implements Comparable<Note> {
                 || this.pitchValue == n.pitchValue;
     }
 
+    /**
+     * A note is "less than" another note when it is a lower pitch, and higher when its pitch is higher.
+     * @param o Note to compare to
+     * @return Negative, zero, or positive based on comparison
+     */
     @Override
     public int compareTo(Note o) {
-        return this.pitchValue - o.pitchValue;
+        // Covers enharmonic equivalence
+        if (this.equals(o)) {
+            return 0;
+        }
+
+        if (this.octave.getNumberValue() == o.octave.getNumberValue()) {
+            // In same octave
+            return this.pitchValue - o.pitchValue;
+        } else {
+            // In different octaves and not enharmonic
+            return this.octave.getNumberValue() - o.octave.getNumberValue();
+        }
     }
 }

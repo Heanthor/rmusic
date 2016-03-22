@@ -67,4 +67,23 @@ public class NoteTest {
 
         assertNotEquals(g3, g5);
     }
+
+    @Test
+    public void testNoteRelation() {
+        // G3 is lower than G5
+        Note g3 = new Note(NoteValues.G, NoteValues.Type.NATURAL, new Octave(3));
+        Note g5 = new Note(NoteValues.G, NoteValues.Type.NATURAL, new Octave(5));
+
+        assertTrue(g3.compareTo(g5) < 0);
+
+        // D3 is lower than G3
+        Note d3 = new Note(NoteValues.D, NoteValues.Type.NATURAL, new Octave(3));
+
+        assertTrue(d3.compareTo(g3) < 0);
+
+        // A4 is higher than G3
+        Note a4 = new Note(NoteValues.A, NoteValues.Type.NATURAL, new Octave(4));
+
+        assertTrue(a4.compareTo(g3) > 0);
+    }
 }
