@@ -1,5 +1,6 @@
 import music.pitch.Chord;
 import org.junit.Test;
+import util.NoteBank;
 
 import static org.junit.Assert.*;
 
