@@ -5,7 +5,7 @@ package music;
  */
 public class Note implements Comparable<Note> {
     private NoteValue basePitch;
-    private NoteValue.Type modification;
+    private NoteValue.Accidental modification;
     private int pitchValue;
     private Octave octave;
 
@@ -13,13 +13,13 @@ public class Note implements Comparable<Note> {
      * Create a note object, representing a specific pitch on a keyboard.
      *
      * @param basePitch    The base pitch, A-G
-     * @param modification Any modification on the pitch
+     * @param accidental Any modification on the pitch
      * @param o            The octave it exists in, in scientific pitch notation
      */
-    public Note(NoteValue basePitch, NoteValue.Type modification, Octave o) {
+    public Note(NoteValue basePitch, NoteValue.Accidental accidental, Octave o) {
         this.basePitch = basePitch;
-        this.modification = modification;
-        this.pitchValue = Pitch.getPitchValue(basePitch, modification);
+        this.modification = accidental;
+        this.pitchValue = Pitch.getPitchValue(basePitch, accidental);
         this.octave = o;
     }
 
@@ -30,7 +30,7 @@ public class Note implements Comparable<Note> {
      */
     public Note(String noteString) {
         NoteValue nv;
-        NoteValue.Type mod;
+        NoteValue.Accidental mod;
         Octave oct;
 
         try {
@@ -41,7 +41,7 @@ public class Note implements Comparable<Note> {
 
         if (noteString.length() == 2) {
             // Note is natural, so last character must be octave
-            mod = NoteValue.Type.NATURAL;
+            mod = NoteValue.Accidental.NATURAL;
 
             try {
                 // Octave constructor handles out of range octaves
@@ -56,10 +56,10 @@ public class Note implements Comparable<Note> {
 
             switch (modification) {
                 case '#':
-                    mod = NoteValue.Type.SHARP;
+                    mod = NoteValue.Accidental.SHARP;
                     break;
                 case 'b':
-                    mod = NoteValue.Type.FLAT;
+                    mod = NoteValue.Accidental.FLAT;
                     break;
                 default:
                     throw new IllegalArgumentException("Note string format incorrect (note modification not found).");

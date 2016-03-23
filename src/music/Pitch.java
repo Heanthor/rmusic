@@ -9,7 +9,7 @@ public class Pitch {
     private Pitch() {}
 
     private static final HashMap<NoteValue, Integer> numValues = new HashMap<NoteValue, Integer>();
-    private static final HashMap<NoteValue.Type, Integer> modificationValues = new HashMap<NoteValue.Type, Integer>();
+    private static final HashMap<NoteValue.Accidental, Integer> modificationValues = new HashMap<NoteValue.Accidental, Integer>();
 
     static {
         // Create association between pitch and number
@@ -23,12 +23,12 @@ public class Pitch {
         numValues.put(NoteValue.G, 11);
 
         // Associate note modifications to values
-        modificationValues.put(NoteValue.Type.NATURAL, 0);
-        modificationValues.put(NoteValue.Type.SHARP, 1);
-        modificationValues.put(NoteValue.Type.FLAT, -1);
+        modificationValues.put(NoteValue.Accidental.NATURAL, 0);
+        modificationValues.put(NoteValue.Accidental.SHARP, 1);
+        modificationValues.put(NoteValue.Accidental.FLAT, -1);
     }
 
-    public static int getPitchValue(NoteValue p, NoteValue.Type t) {
+    public static int getPitchValue(NoteValue p, NoteValue.Accidental t) {
         return numValues.get(p) + modificationValues.get(t);
     }
 }

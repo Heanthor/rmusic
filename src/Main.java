@@ -9,8 +9,8 @@ import static music.NoteValue.*;
  */
 public class Main {
     public static void main(String[] args) {
-        Note cs4 = new Note(NoteValue.C, Type.SHARP, new Octave(4));
-        Note db4 = new Note(NoteValue.D, Type.FLAT, new Octave(4));
+        Note cs4 = new Note(NoteValue.C, Accidental.SHARP, new Octave(4));
+        Note db4 = new Note(NoteValue.D, Accidental.FLAT, new Octave(4));
 
         System.out.println(cs4);
         System.out.println(db4);

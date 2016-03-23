@@ -16,7 +16,7 @@ public enum NoteValue {
     /**
      * Modifications on a pitch, to either leave as is, raise, or lower a half step.
      */
-    public enum Type {
+    public enum Accidental {
         NATURAL, SHARP, FLAT
     }
 }
