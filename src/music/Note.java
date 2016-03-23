@@ -2,25 +2,82 @@ package music;
 
 /**
  * Represents a specific note, containing information about its exact pitch.
- *
  */
 public class Note implements Comparable<Note> {
-    private NoteValues basePitch;
-    private NoteValues.Type modification;
+    private NoteValue basePitch;
+    private NoteValue.Type modification;
     private int pitchValue;
     private Octave octave;
 
     /**
      * Create a note object, representing a specific pitch on a keyboard.
-     * @param basePitch The base pitch, A-G
+     *
+     * @param basePitch    The base pitch, A-G
      * @param modification Any modification on the pitch
-     * @param o The octave it exists in, in scientific pitch notation
+     * @param o            The octave it exists in, in scientific pitch notation
      */
-    public Note(NoteValues basePitch, NoteValues.Type modification, Octave o) {
+    public Note(NoteValue basePitch, NoteValue.Type modification, Octave o) {
         this.basePitch = basePitch;
         this.modification = modification;
         this.pitchValue = Pitch.getPitchValue(basePitch, modification);
         this.octave = o;
+    }
+
+    /**
+     * Parses a note string and creates its Note object representation.
+     * Format: [Base note (uppercase)][Optional: # or b][Octave number]
+     * @param noteString Note representation string
+     */
+    public Note(String noteString) {
+        NoteValue nv;
+        NoteValue.Type mod;
+        Octave oct;
+
+        try {
+            nv = NoteValue.valueOf("" + noteString.charAt(0));
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Note string format incorrect (Note name not found in first position).");
+        }
+
+        if (noteString.length() == 2) {
+            // Note is natural, so last character must be octave
+            mod = NoteValue.Type.NATURAL;
+
+            try {
+                // Octave constructor handles out of range octaves
+                oct = new Octave(Integer.parseInt("" + noteString.charAt(1)));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Note string format incorrect (No octave found).");
+            }
+
+        } else if (noteString.length() == 3) {
+            // Note has modifications
+            char modification = noteString.charAt(1);
+
+            switch (modification) {
+                case '#':
+                    mod = NoteValue.Type.SHARP;
+                    break;
+                case 'b':
+                    mod = NoteValue.Type.FLAT;
+                    break;
+                default:
+                    throw new IllegalArgumentException("Note string format incorrect (note modification not found).");
+            }
+
+            try {
+                oct = new Octave(Integer.parseInt("" + noteString.charAt(2)));
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Note string format incorrect (No octave found).");
+            }
+
+        } else {
+            throw new IllegalArgumentException("Note string format incorrect (incorrect length).");
+        }
+
+        this.basePitch = nv;
+        this.modification = mod;
+        this.octave = oct;
     }
 
     public String toString() {
@@ -63,7 +120,7 @@ public class Note implements Comparable<Note> {
         }
 
         // Octave changes on C, corner case
-        if (this.basePitch == NoteValues.C || n.basePitch == NoteValues.C) {
+        if (this.basePitch == NoteValue.C || n.basePitch == NoteValue.C) {
             // Not more than one octave separates them
             if (Math.abs(n.octave.getNumberValue() - this.octave.getNumberValue()) > 1) {
                 return false;
@@ -79,6 +136,7 @@ public class Note implements Comparable<Note> {
 
     /**
      * A note is "less than" another note when it is a lower pitch, and higher when its pitch is higher.
+     *
      * @param o Note to compare to
      * @return Negative, zero, or positive based on comparison
      */

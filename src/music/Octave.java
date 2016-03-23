@@ -8,7 +8,7 @@ public class Octave implements Comparable<Octave>{
 
     public Octave(int octave) {
         if (octave < 1 || octave > 8) {
-            throw new IllegalArgumentException("Octave out of range (1 - 8)");
+            throw new IllegalArgumentException("Octave out of range (1 - 8).");
         }
 
         this.octave = octave;

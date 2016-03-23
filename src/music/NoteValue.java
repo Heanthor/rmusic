@@ -3,7 +3,7 @@ package music;
 /**
  * Represents white key pitches.
  */
-public enum NoteValues {
+public enum NoteValue {
     // Pitches in diatonic scale
     A,
     B,
