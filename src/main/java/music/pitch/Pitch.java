@@ -1,4 +1,4 @@
-package music;
+package music.pitch;
 
 import java.util.HashMap;
 
@@ -13,7 +13,7 @@ public class Pitch {
     private static final HashMap<NoteValue.Accidental, Integer> modificationValues = new HashMap<NoteValue.Accidental, Integer>();
 
     static {
-        // Create association between pitch and number
+        // Create association between pitch and integer
         // Each increment represents one half-step
         numValues.put(NoteValue.A, 1);
         numValues.put(NoteValue.B, 3);
@@ -30,6 +30,10 @@ public class Pitch {
     }
 
     public static int getPitchValue(NoteValue p, NoteValue.Accidental t) {
-        return numValues.get(p) + modificationValues.get(t);
+        if (p == null || t == null) {
+            return -1;
+        } else {
+            return numValues.get(p) + modificationValues.get(t);
+        }
     }
 }

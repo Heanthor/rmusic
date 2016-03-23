@@ -11,7 +11,7 @@ import java.util.Arrays;
  * Currently supports common non-triplet note values, up to sixty-fourth notes.
  */
 public class Duration {
-    public enum NoteValue {
+    public enum DurationValue {
         WHOLE,
         HALF,
         QUARTER,
@@ -26,7 +26,7 @@ public class Duration {
      * Duration values are represented internally as a fraction akin to the time signature of the measure.
      * E.g. a dotted half note in 3/4 time would be represented as the Fraction 3/4.
      * <p/>
-     * An eigth note is represented by the Fraction 1/8 in both 4/4 and 6/8 time, as another example.
+     * An eighth note is represented by the Fraction 1/8 in both 4/4 and 6/8 time, as another example.
      */
     private static class Fraction {
         public int numerator;
@@ -38,10 +38,10 @@ public class Duration {
         }
 
         /**
-         * Adds this Fraction to the given Fractions. Uses Euclidian algorithm. Does not modify the current object.
+         * Adds this Fraction to the given Fractions. Uses Euclidean algorithm. Does not modify the current object.
          *
          * @param f Fraction to add to current object
-         * @return The result
+         * @return The resulting new Fraction
          */
         public Fraction add(Fraction f) {
             return simplify(new Fraction(numerator * f.denominator + denominator * f.numerator,
@@ -52,7 +52,7 @@ public class Duration {
          * Divides this Fraction by the given Fraction. Does not modify the current object.
          *
          * @param f Fraction to divide by
-         * @return The result
+         * @return The resulting new Fraction
          */
         public Fraction divide(Fraction f) {
             return simplify(new Fraction(numerator * f.denominator, denominator * f.numerator));
@@ -62,7 +62,7 @@ public class Duration {
          * Multiplies this Fraction by the given Fraction. Does not modify the current object.
          *
          * @param f Fraction to multiply by
-         * @return The result
+         * @return The resulting new Fraction
          */
         public Fraction multiply(Fraction f) {
             return simplify(new Fraction(numerator * f.numerator, denominator * f.denominator));
@@ -128,25 +128,30 @@ public class Duration {
             return numerator + "/" + denominator;
         }
     }
+    // Allow mapping of custom strings to enum DurationValue enum
     public static final ArrayList<String> strRepresentations = new ArrayList<String>();
+    public static final ArrayList<String> enumNames = new ArrayList<String>();
 
-    private NoteValue value;
+    private DurationValue value;
     private boolean dot;
     private Fraction durationValue;
 
-    private static HashBiMap<NoteValue, Fraction> durationValues = HashBiMap.create();
+    private static final HashBiMap<DurationValue, Fraction> durationValues = HashBiMap.create();
 
     static {
         strRepresentations.addAll(Arrays.asList("W", "H", "Q", "E", "S", "T", "X"));
+        enumNames.addAll(Arrays.asList("WHOLE", "HALF", "QUARTER", "EIGHTH", "SIXTEENTH",
+                "THIRTYSECONDTH", "SIXTYFOURTH"));
+
         // Convert enum into numeric duration value
         // Values are fractions of total beats in measure
-        durationValues.put(NoteValue.WHOLE, new Fraction(1, 1));
-        durationValues.put(NoteValue.HALF, new Fraction(1, 2));
-        durationValues.put(NoteValue.QUARTER, new Fraction(1, 4));
-        durationValues.put(NoteValue.EIGHTH, new Fraction(1, 8));
-        durationValues.put(NoteValue.SIXTEENTH, new Fraction(1, 16));
-        durationValues.put(NoteValue.THIRTYSECONDTH, new Fraction(1, 32));
-        durationValues.put(NoteValue.SIXTYFOURTH, new Fraction(1, 64));
+        durationValues.put(DurationValue.WHOLE, new Fraction(1, 1));
+        durationValues.put(DurationValue.HALF, new Fraction(1, 2));
+        durationValues.put(DurationValue.QUARTER, new Fraction(1, 4));
+        durationValues.put(DurationValue.EIGHTH, new Fraction(1, 8));
+        durationValues.put(DurationValue.SIXTEENTH, new Fraction(1, 16));
+        durationValues.put(DurationValue.THIRTYSECONDTH, new Fraction(1, 32));
+        durationValues.put(DurationValue.SIXTYFOURTH, new Fraction(1, 64));
     }
 
     /**
@@ -155,8 +160,8 @@ public class Duration {
      * @param duration Amount of time the Duration should last.
      * @param dot      If true, add a dot to this Duration, adding half its value to its total.
      */
-    public Duration(NoteValue duration, boolean dot) {
-        if (duration == NoteValue.SIXTYFOURTH && dot) {
+    public Duration(DurationValue duration, boolean dot) {
+        if (duration == DurationValue.SIXTYFOURTH && dot) {
             throw new IllegalArgumentException("Duration resolution too great (cannot exceed sixty-fourth note).");
         }
         this.value = duration;
@@ -180,12 +185,32 @@ public class Duration {
             return new Duration(durationValues.inverse().get(f), false);
         } else {
             // Duration has a dot, so simplify it
-            NoteValue baseNote = durationValues.inverse().get(new Fraction(1, f.denominator / 2));
+            DurationValue baseNote = durationValues.inverse().get(new Fraction(1, f.denominator / 2));
 
             // Duration will be the next largest note, plus a dot
             // E.g. 3/4 -> dotted half (1/2 + dot)
             // 3/8 -> dotted quarter (1/4 + dot)
             return new Duration(baseNote, true);
+        }
+    }
+
+    /**
+     * Parses a duration string into its respective object.
+     * @param durationString The string to parse in form [Duration][(Optional) d]
+     * @return The created object
+     */
+    public static Duration parseDurationString(String durationString) {
+        int ordinal;
+
+        if (durationString.length() == 1) {
+            // No dot
+            ordinal = Duration.strRepresentations.indexOf(durationString);
+            return new Duration(DurationValue.valueOf(Duration.enumNames.get(ordinal)), false);
+        } else if (durationString.length() == 2 && durationString.charAt(1) == 'd') {
+            ordinal = Duration.strRepresentations.indexOf("" + durationString.charAt(0));
+            return new Duration(DurationValue.valueOf(Duration.enumNames.get(ordinal)), true);
+        } else {
+            throw new IllegalArgumentException("Note string format incorrect (invalid duration string " + durationString + ")");
         }
     }
 
@@ -204,6 +229,7 @@ public class Duration {
 
         return fractionToDuration(total);
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -222,6 +248,6 @@ public class Duration {
 
     @Override
     public String toString() {
-        return "Duration: " + (dot ? "Dotted " : "") + value.name().toLowerCase();
+        return "Duration: " + (dot ? "dotted " : "") + value.name().toLowerCase();
     }
 }

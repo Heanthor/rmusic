@@ -1,4 +1,4 @@
-import music.Note;
+import music.pitch.Note;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -9,13 +9,13 @@ import static org.junit.Assert.*;
 public class NoteTest {
     @Test
     public void testStringConstructor() {
-        Note str1 = new Note("C#4");
+        Note str1 = new Note("C#4:Q");
         assertEquals(str1, NoteBank.cs4);
 
-        Note str2 = new Note("G3");
+        Note str2 = new Note("G3:Qd");
         assertEquals(str2, NoteBank.g3);
 
-        Note str3 = new Note("Ab4");
+        Note str3 = new Note("Ab4:Hd");
         assertEquals(str3, NoteBank.ab);
     }
 

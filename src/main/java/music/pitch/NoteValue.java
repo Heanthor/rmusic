@@ -1,4 +1,4 @@
-package music;
+package music.pitch;
 
 /**
  * Represents white key pitches.

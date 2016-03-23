@@ -1,4 +1,4 @@
-package music;
+package music.pitch;
 
 import music.rhythm.Duration;
 
@@ -7,11 +7,15 @@ import music.rhythm.Duration;
  * @author reedt
  */
 public class Note implements Comparable<Note> {
-    private final NoteValue basePitch;
-    private final NoteValue.Accidental modification;
+    // These fields can be used to identify the Note
+    public final NoteValue basePitch;
+    public final NoteValue.Accidental modification;
+    public final Octave octave;
+    public final Duration duration;
+
+    // This field provides ease of comparison between Notes
     private final int pitchValue;
-    private final Octave octave;
-    private final Duration duration;
+
 
     /**
      * Create a note object, representing a specific pitch on a keyboard.
@@ -30,14 +34,16 @@ public class Note implements Comparable<Note> {
 
     /**
      * Parses a note string and creates its Note object representation.
-     * Format: [Base note (uppercase)][Optional: # or b][Octave number][Duration string]
-     * @param noteString Note representation string
+     * Format: [Base note (uppercase)][Optional: # or b][Octave number]:[Duration string]
+     * @param noteStringIn Note representation string
      */
-    public Note(String noteString) {
+    public Note(String noteStringIn) {
         NoteValue nv;
         NoteValue.Accidental mod;
         Octave oct;
-        Duration dur;
+
+        String noteString = noteStringIn.substring(0, noteStringIn.indexOf(':'));
+        String duration = noteStringIn.substring(noteStringIn.indexOf(':') + 1);
 
         try {
             nv = NoteValue.valueOf("" + noteString.charAt(0));
@@ -45,7 +51,7 @@ public class Note implements Comparable<Note> {
             throw new IllegalArgumentException("Note string format incorrect (Note name not found in first position).");
         }
 
-        if (noteString.length() == 3) {
+        if (noteString.length() == 2) {
             // Note is natural, so last character must be octave
             mod = NoteValue.Accidental.NATURAL;
 
@@ -56,9 +62,7 @@ public class Note implements Comparable<Note> {
                 throw new IllegalArgumentException("Note string format incorrect (No octave found).");
             }
 
-            Duration.strRepresentations.indexOf("" + noteString.charAt(3));
-
-        } else if (noteString.length() == 4) {
+        } else if (noteString.length() == 3) {
             // Note has modifications
             char modification = noteString.charAt(1);
 
@@ -76,7 +80,7 @@ public class Note implements Comparable<Note> {
             try {
                 oct = Octave.getInstance(Integer.parseInt("" + noteString.charAt(2)));
             } catch (NumberFormatException e) {
-                throw new IllegalArgumentException("Note string format incorrect (No octave found).");
+                throw new IllegalArgumentException("Note string format incorrect (no octave found).");
             }
 
         } else {
@@ -87,10 +91,11 @@ public class Note implements Comparable<Note> {
         this.modification = mod;
         this.octave = oct;
         this.pitchValue = Pitch.getPitchValue(nv, mod);
+        this.duration = Duration.parseDurationString(duration);
     }
 
     public String toString() {
-        String toReturn = basePitch.name();
+        String toReturn = "Pitch: " + basePitch.name();
 
         switch (modification) {
             case SHARP:
@@ -106,9 +111,17 @@ public class Note implements Comparable<Note> {
 
         toReturn += octave.toString();
 
+        toReturn += ", " + duration.toString();
+
         return toReturn;
     }
 
+    /**
+     * A note is equal to another note when it represents the same sounding pitch.
+     * Thus, this method checks for enharmonic equivalence between two pitches
+     * @param obj Note to compare
+     * @return True if notes are enharmonically equivalent, false otherwise
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

@@ -9,12 +9,12 @@ import static org.junit.Assert.*;
  * @author reedt
  */
 public class DurationTest {
-    Duration whole = new Duration(Duration.NoteValue.WHOLE, false);
-    Duration quarter = new Duration(Duration.NoteValue.QUARTER, false);
-    Duration half = new Duration(Duration.NoteValue.HALF, false);
-    Duration eighth = new Duration(Duration.NoteValue.EIGHTH, false);
-    Duration dottedQuarter = new Duration(Duration.NoteValue.QUARTER, true);
-    Duration dottedHalf = new Duration(Duration.NoteValue.HALF, true);
+    Duration whole = new Duration(Duration.DurationValue.WHOLE, false);
+    Duration quarter = new Duration(Duration.DurationValue.QUARTER, false);
+    Duration half = new Duration(Duration.DurationValue.HALF, false);
+    Duration eighth = new Duration(Duration.DurationValue.EIGHTH, false);
+    Duration dottedQuarter = new Duration(Duration.DurationValue.QUARTER, true);
+    Duration dottedHalf = new Duration(Duration.DurationValue.HALF, true);
 
 
     @Test

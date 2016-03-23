@@ -1,4 +1,4 @@
-package music;
+package music.pitch;
 
 /**
  * Represents an octave on a traditional keyboard. Just a wrapper on an integer.
@@ -11,6 +11,7 @@ public class Octave implements Comparable<Octave> {
     private static final Octave[] instances = new Octave[8];
 
     static {
+        // Create static Octave instances
         for (int i = 1; i < 8; i++) {
             instances[i] = new Octave(i);
         }
