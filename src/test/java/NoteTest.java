@@ -1,5 +1,4 @@
-package music;
-
+import music.Note;
 import org.junit.Test;
 
 import static org.junit.Assert.*;

@@ -1,4 +1,6 @@
-package music;
+import music.Note;
+import music.NoteValue;
+import music.Octave;
 
 /**
  * Holds notes used for testing.
