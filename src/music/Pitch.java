@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 /**
  * Class that associates a number with a particular combination of base note and modification.
+ * @author reedt
  */
 public class Pitch {
     private Pitch() {}

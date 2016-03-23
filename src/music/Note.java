@@ -2,6 +2,7 @@ package music;
 
 /**
  * Represents a specific note, containing information about its exact pitch.
+ * @author reedt
  */
 public class Note implements Comparable<Note> {
     private NoteValue basePitch;
@@ -45,7 +46,7 @@ public class Note implements Comparable<Note> {
 
             try {
                 // Octave constructor handles out of range octaves
-                oct = new Octave(Integer.parseInt("" + noteString.charAt(1)));
+                oct = Octave.getInstance(Integer.parseInt("" + noteString.charAt(1)));
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Note string format incorrect (No octave found).");
             }
@@ -66,7 +67,7 @@ public class Note implements Comparable<Note> {
             }
 
             try {
-                oct = new Octave(Integer.parseInt("" + noteString.charAt(2)));
+                oct = Octave.getInstance(Integer.parseInt("" + noteString.charAt(2)));
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Note string format incorrect (No octave found).");
             }

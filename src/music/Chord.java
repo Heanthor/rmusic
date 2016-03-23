@@ -5,7 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Created by reedtrevelyan on 3/22/16.
+ * Multiple Notes sounded at once.
+ * @author Reed
  */
 public class Chord {
     public final List<Note> chord = new ArrayList<Note>();

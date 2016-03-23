@@ -1,17 +1,32 @@
 package music;
 
 /**
- * Represents an octave on a traditional keyboard.
+ * Represents an octave on a traditional keyboard. Just a wrapper on an integer.
+ * Uses a singleton pattern to cut down on allocations.
+ * @author reedt
  */
-public class Octave implements Comparable<Octave>{
+public class Octave implements Comparable<Octave> {
     private int octave;
 
-    public Octave(int octave) {
-        if (octave < 1 || octave > 8) {
-            throw new IllegalArgumentException("Octave out of range (1 - 8).");
-        }
+    private static final Octave[] instances = new Octave[8];
 
+    static {
+        for (int i = 1; i < 8; i++) {
+            instances[i] = new Octave(i);
+        }
+    }
+
+    private Octave(int octave) {
         this.octave = octave;
+    }
+
+    /**
+     * Returns the object representing this octave.
+     * @param octave Octave to get reference to
+     * @return the Octave object
+     */
+    public static Octave getInstance(int octave) {
+        return instances[octave];
     }
 
     public String toString() {
