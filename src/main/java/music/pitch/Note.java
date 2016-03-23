@@ -116,6 +116,26 @@ public class Note implements Comparable<Note> {
         return toReturn;
     }
 
+    public String pitchOnlyToString() {
+        String toReturn = basePitch.name();
+
+        switch (modification) {
+            case SHARP:
+                toReturn += "#";
+                break;
+            case FLAT:
+                toReturn += "b";
+                break;
+            default:
+                // Add nothing for natural
+                break;
+        }
+
+        toReturn += octave.toString();
+
+        return toReturn;
+    }
+
     /**
      * A note is equal to another note when it represents the same sounding pitch.
      * Thus, this method checks for enharmonic equivalence between two pitches

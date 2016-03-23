@@ -20,7 +20,7 @@ public class Chord {
     public String toString() {
         ArrayList<String> sortedList = new ArrayList<String>(chord.size());
 
-        sortedList.addAll(chord.stream().map(Note::toString).collect(Collectors.toList()));
+        sortedList.addAll(chord.stream().map(Note::pitchOnlyToString).collect(Collectors.toList()));
 
         sortedList.sort(null); // Notes are Comparable, so no Comparator is necessary
         return String.join("-", sortedList);
