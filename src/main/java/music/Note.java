@@ -1,14 +1,17 @@
 package music;
 
+import music.rhythm.Duration;
+
 /**
  * Represents a specific note, containing information about its exact pitch.
  * @author reedt
  */
 public class Note implements Comparable<Note> {
-    private NoteValue basePitch;
-    private NoteValue.Accidental modification;
-    private int pitchValue;
-    private Octave octave;
+    private final NoteValue basePitch;
+    private final NoteValue.Accidental modification;
+    private final int pitchValue;
+    private final Octave octave;
+    private final Duration duration;
 
     /**
      * Create a note object, representing a specific pitch on a keyboard.
@@ -17,22 +20,24 @@ public class Note implements Comparable<Note> {
      * @param accidental Any modification on the pitch
      * @param o            The octave it exists in, in scientific pitch notation
      */
-    public Note(NoteValue basePitch, NoteValue.Accidental accidental, Octave o) {
+    public Note(NoteValue basePitch, NoteValue.Accidental accidental, Octave o, Duration d) {
         this.basePitch = basePitch;
         this.modification = accidental;
         this.pitchValue = Pitch.getPitchValue(basePitch, accidental);
         this.octave = o;
+        this.duration = d;
     }
 
     /**
      * Parses a note string and creates its Note object representation.
-     * Format: [Base note (uppercase)][Optional: # or b][Octave number]
+     * Format: [Base note (uppercase)][Optional: # or b][Octave number][Duration string]
      * @param noteString Note representation string
      */
     public Note(String noteString) {
         NoteValue nv;
         NoteValue.Accidental mod;
         Octave oct;
+        Duration dur;
 
         try {
             nv = NoteValue.valueOf("" + noteString.charAt(0));
@@ -40,7 +45,7 @@ public class Note implements Comparable<Note> {
             throw new IllegalArgumentException("Note string format incorrect (Note name not found in first position).");
         }
 
-        if (noteString.length() == 2) {
+        if (noteString.length() == 3) {
             // Note is natural, so last character must be octave
             mod = NoteValue.Accidental.NATURAL;
 
@@ -51,7 +56,9 @@ public class Note implements Comparable<Note> {
                 throw new IllegalArgumentException("Note string format incorrect (No octave found).");
             }
 
-        } else if (noteString.length() == 3) {
+            Duration.strRepresentations.indexOf("" + noteString.charAt(3));
+
+        } else if (noteString.length() == 4) {
             // Note has modifications
             char modification = noteString.charAt(1);
 

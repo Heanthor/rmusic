@@ -2,6 +2,9 @@ package music.rhythm;
 
 import com.google.common.collect.HashBiMap;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /**
  * Class representing an amount of time a note should sound for.
  * Represents time as note values found in most music.
@@ -17,6 +20,7 @@ public class Duration {
         THIRTYSECONDTH,
         SIXTYFOURTH
     }
+
 
     /**
      * Duration values are represented internally as a fraction akin to the time signature of the measure.
@@ -124,6 +128,8 @@ public class Duration {
             return numerator + "/" + denominator;
         }
     }
+    public static final ArrayList<String> strRepresentations = new ArrayList<String>();
+
     private NoteValue value;
     private boolean dot;
     private Fraction durationValue;
@@ -131,6 +137,7 @@ public class Duration {
     private static HashBiMap<NoteValue, Fraction> durationValues = HashBiMap.create();
 
     static {
+        strRepresentations.addAll(Arrays.asList("W", "H", "Q", "E", "S", "T", "X"));
         // Convert enum into numeric duration value
         // Values are fractions of total beats in measure
         durationValues.put(NoteValue.WHOLE, new Fraction(1, 1));
@@ -162,6 +169,11 @@ public class Duration {
         }
     }
 
+    /**
+     * Converts a fraction representing a Duration into that Duration object.
+     * @param f Fraction to convert
+     * @return The Duration object represented by that Fraction, with note and dot.
+     */
     private static Duration fractionToDuration(Fraction f) {
         if (durationValues.containsValue(f)) {
             // Fraction represents a simple note, so return it
@@ -176,6 +188,7 @@ public class Duration {
             return new Duration(baseNote, true);
         }
     }
+
     /**
      * Sums multiple durations to return the larger duration.
      *
