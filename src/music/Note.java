@@ -78,6 +78,7 @@ public class Note implements Comparable<Note> {
         this.basePitch = nv;
         this.modification = mod;
         this.octave = oct;
+        this.pitchValue = Pitch.getPitchValue(nv, mod);
     }
 
     public String toString() {
