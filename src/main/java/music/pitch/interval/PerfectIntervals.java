@@ -5,6 +5,7 @@ package music.pitch.interval;
  * @author reedt
  */
 public enum PerfectIntervals implements Interval {
+    ERROR_INTERVAL(-1),
     PERFECT_UNISON(0),
     PERFECT_FOURTH(5),
     PERFECT_FIFTH(7),

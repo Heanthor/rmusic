@@ -14,7 +14,7 @@ public class Note implements Comparable<Note> {
     public final Duration duration;
 
     // This field provides ease of comparison between Notes
-    private final int pitchValue;
+    public final int pitchValue;
 
 
     /**

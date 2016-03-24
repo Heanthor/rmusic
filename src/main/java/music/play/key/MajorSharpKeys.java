@@ -11,5 +11,9 @@ public enum MajorSharpKeys implements Key {
     E,
     B,
     Fs,
-    Cs
+    Cs;
+
+    MajorSharpKeys() {
+
+    }
 }
