@@ -4,6 +4,7 @@ import com.google.common.collect.HashBiMap;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.IllegalFormatException;
 
 /**
  * Class representing an amount of time a note should sound for.
@@ -204,12 +205,19 @@ public class Duration {
         if (durationString.length() == 1) {
             // No dot
             ordinal = Duration.strRepresentations.indexOf(durationString);
+            if (ordinal == -1) {
+                throw new IllegalArgumentException("Note string format incorrect (invalid duration string '" + durationString + "').");
+            }
+
             return new Duration(DurationValue.valueOf(Duration.enumNames.get(ordinal)), false);
         } else if (durationString.length() == 2 && durationString.charAt(1) == 'd') {
             ordinal = Duration.strRepresentations.indexOf("" + durationString.charAt(0));
+            if (ordinal == -1) {
+                throw new IllegalArgumentException("Note string format incorrect (invalid duration string '" + durationString + "').");
+            }
             return new Duration(DurationValue.valueOf(Duration.enumNames.get(ordinal)), true);
         } else {
-            throw new IllegalArgumentException("Note string format incorrect (invalid duration string " + durationString + ")");
+            throw new IllegalArgumentException("Note string format incorrect (invalid duration string '" + durationString + "').");
         }
     }
 

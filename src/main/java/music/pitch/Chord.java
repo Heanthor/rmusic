@@ -1,10 +1,10 @@
 package music.pitch;
 
 import music.pitch.interval.Interval;
+import music.pitch.interval.IntervalUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -32,7 +32,7 @@ public class Chord {
         chord.add(base);
 
         for (Interval i: intervalsAbove) {
-            chord.add(Pitch.getNoteAbove(base, i));
+            chord.add(IntervalUtils.getNoteAbove(base, i));
         }
     }
 

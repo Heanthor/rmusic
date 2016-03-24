@@ -1,7 +1,11 @@
 import music.pitch.Note;
 import music.pitch.Octave;
 import music.pitch.NoteValue;
+import music.pitch.interval.Interval;
+import music.pitch.interval.IntervalUtils;
 import music.rhythm.Duration;
+
+import java.util.Scanner;
 
 import static music.pitch.NoteValue.*;
 
@@ -11,10 +15,35 @@ import static music.pitch.NoteValue.*;
  */
 public class Main {
     public static void main(String[] args) {
-        Note cs4 = new Note(NoteValue.C, Accidental.SHARP, Octave.FOUR, new Duration(Duration.DurationValue.QUARTER, false));
-        Note db4 = new Note(NoteValue.D, Accidental.FLAT, Octave.FOUR, new Duration(Duration.DurationValue.QUARTER, false));
+        new Main().inputLoop();
+    }
 
-        System.out.println(cs4);
-        System.out.println(db4);
+    private void inputLoop() {
+        System.out.print("Give me a base note.");
+        System.out.println("Form: [Base note (uppercase)][Optional: # or b][Octave number]:[Duration string].");
+        System.out.println("Duration string choices: \"W\", \"H\", \"Q\", \"E\", \"S\", \"T\", or \"X\"");
+
+        while (true) {
+            Scanner sc = new Scanner(System.in);
+
+            System.out.print("Note: ");
+
+            try {
+                Note noteIn = new Note(sc.nextLine());
+                System.out.println(noteIn.toString());
+
+                System.out.println("Now give me an interval: ");
+                Interval intervalIn = IntervalUtils.stringToInterval(sc.nextLine());
+                System.out.print(intervalIn);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            try {
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

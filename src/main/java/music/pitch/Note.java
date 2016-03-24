@@ -42,6 +42,10 @@ public class Note implements Comparable<Note> {
         NoteValue.Accidental mod;
         Octave oct;
 
+        if (noteStringIn.indexOf(':') == -1) {
+            throw new IllegalArgumentException("Note string format incorrect (Missing ':' divider).");
+        }
+
         String noteString = noteStringIn.substring(0, noteStringIn.indexOf(':'));
         String duration = noteStringIn.substring(noteStringIn.indexOf(':') + 1);
 
@@ -74,7 +78,8 @@ public class Note implements Comparable<Note> {
                     mod = NoteValue.Accidental.FLAT;
                     break;
                 default:
-                    throw new IllegalArgumentException("Note string format incorrect (note modification not found).");
+                    throw new IllegalArgumentException("Note string format incorrect (note modification incorrect). " +
+                            "Pick either: 'b' or '#'.");
             }
 
             try {
@@ -84,7 +89,7 @@ public class Note implements Comparable<Note> {
             }
 
         } else {
-            throw new IllegalArgumentException("Note string format incorrect (incorrect length).");
+            throw new IllegalArgumentException("Note string format incorrect (incorrect length - missing parameters).");
         }
 
         this.basePitch = nv;
