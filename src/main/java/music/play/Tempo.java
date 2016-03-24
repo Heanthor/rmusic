@@ -3,11 +3,14 @@ package music.play;
 import static music.rhythm.Duration.DurationValue;
 
 /**
- * Created by reedtrevelyan on 3/23/16.
+ * Mutable class representing tempo. As the tempo can change during a piece of music,
+ * this class can change to represent this.
+ *
+ * @author reedt
  */
 public class Tempo {
-    public final DurationValue note;
-    public final int bpm;
+    public DurationValue note;
+    public int bpm;
 
     /**
      * Creates a Tempo object.

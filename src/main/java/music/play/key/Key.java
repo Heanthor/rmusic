@@ -11,4 +11,8 @@ import music.pitch.Note;
  */
 public interface Key {
     Note getNoteRepr();
+
+    default KeySignature getKeySignature() {
+        return new KeySignature(this);
+    }
 }
