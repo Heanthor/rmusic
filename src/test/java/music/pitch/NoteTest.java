@@ -15,10 +15,13 @@ public class NoteTest {
         assertEquals(str1, NoteBank.cs4);
 
         Note str2 = new Note("G3:Qd");
-        assertEquals(str2, NoteBank.g3);
+        // different duration
+        assertNotEquals(str2, NoteBank.g3);
+        assertTrue(str2.equalsPitchOnly(NoteBank.g3));
 
         Note str3 = new Note("Ab4:Hd");
-        assertEquals(str3, NoteBank.ab);
+        assertNotEquals(str3, NoteBank.ab);
+        assertTrue(str3.equalsPitchOnly(NoteBank.ab));
     }
 
     @Test
@@ -31,6 +34,10 @@ public class NoteTest {
 
         // Ab and G# are enharmonic, also wraps around the number representation
         assertEquals(NoteBank.ab, NoteBank.gs);
+
+        // Comparison works even if no duration is given
+        assertTrue(NoteBank.e.equalsPitchOnly(
+                new Note(NoteValue.F, NoteValue.Accidental.FLAT, NoteBank.e.octave, null)));
     }
 
     @Test

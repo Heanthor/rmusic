@@ -1,16 +1,12 @@
 import music.pitch.Note;
-import music.pitch.Octave;
-import music.pitch.NoteValue;
 import music.pitch.interval.Interval;
 import music.pitch.interval.IntervalUtils;
-import music.rhythm.Duration;
 
 import java.util.Scanner;
 
-import static music.pitch.NoteValue.*;
-
 /**
  * Test driver
+ *
  * @author reedt
  */
 public class Main {
@@ -34,11 +30,30 @@ public class Main {
 
                 System.out.println("Now give me an interval: ");
                 Interval intervalIn = IntervalUtils.stringToInterval(sc.nextLine());
-                System.out.print(intervalIn);
+
+                System.out.print("Find note above or below? (a/b): ");
+                String choice = sc.nextLine();
+
+                if (!choice.equals("a") && !choice.equals("b")) {
+                    throw new IllegalArgumentException("Choice must be a or b.");
+                }
+
+                boolean above = choice.equals("a");
+
+                Note noteOut;
+                if (above) {
+                    noteOut = IntervalUtils.getNoteAbove(noteIn, intervalIn);
+                } else {
+                    noteOut = IntervalUtils.getNoteBelow(noteIn, intervalIn);
+                }
+
+                System.out.println("Note " + (above ? "above: " : "below: ") + noteOut.pitchOnlyToString());
+                System.out.println();
             } catch (Exception e) {
                 e.printStackTrace();
             }
 
+            // Delay printing slightly
             try {
                 Thread.sleep(10);
             } catch (InterruptedException e) {

@@ -3,6 +3,8 @@ package music.pitch;
 import music.pitch.interval.MajorIntervals;
 import music.pitch.interval.MinorIntervals;
 import music.pitch.interval.PerfectIntervals;
+import music.rhythm.Duration;
+import music.rhythm.Rest;
 import org.junit.Test;
 import util.NoteBank;
 

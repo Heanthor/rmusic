@@ -60,7 +60,7 @@ public class IntervalUtils {
     }
 
     /**
-     * Get the note located interval above baseNote.
+     * Get the Note located interval above baseNote.
      * the returned Note has the same Duration as baseNote.
      *
      * @param baseNote base note.
@@ -72,13 +72,33 @@ public class IntervalUtils {
 
         int combinedValue = intervalHalfSteps + baseNote.pitchValue;
         if (combinedValue > 12) {
-            combinedValue = combinedValue - 12;
+            // Up one octave
+            combinedValue -= 12;
 
             Note tmp = Pitch.pitchFromPitchValue(combinedValue);
-            return new Note(tmp.basePitch, tmp.modification, Octave.octaveFromInteger(baseNote.octave.getNumberValue() + 1), baseNote.duration);
+            return new Note(tmp.basePitch, tmp.accidental, Octave.octaveFromInteger(baseNote.octave.getNumberValue() + 1),
+                    baseNote.duration);
         } else {
             Note tmp = Pitch.pitchFromPitchValue(combinedValue);
-            return new Note(tmp.basePitch, tmp.modification, baseNote.octave, baseNote.duration);
+            return new Note(tmp.basePitch, tmp.accidental, baseNote.octave, baseNote.duration);
+        }
+    }
+
+    public static Note getNoteBelow(Note baseNote, Interval interval) {
+        int intervalHalfSteps = interval.getNumHalfSteps();
+
+        int combinedValue = baseNote.pitchValue - intervalHalfSteps;
+
+        if (combinedValue < 0) {
+            // Down one octave
+            combinedValue += 12;
+
+            Note tmp = Pitch.pitchFromPitchValue(combinedValue);
+            return new Note(tmp.basePitch, tmp.accidental, Octave.octaveFromInteger(baseNote.octave.getNumberValue() - 1),
+                    baseNote.duration);
+        } else {
+            Note tmp = Pitch.pitchFromPitchValue(combinedValue);
+            return new Note(tmp.basePitch, tmp.accidental, baseNote.octave, baseNote.duration);
         }
     }
 
@@ -94,19 +114,16 @@ public class IntervalUtils {
             case "perfect":
                 return parsePerfectInterval(interval);
             case "major":
-                break;
+                return parseMajorMinorIntervals(interval, true);
             case "minor":
-                break;
+                return parseMajorMinorIntervals(interval, false);
             case "diminished":
-                break;
+                return parseDimishedAugmentedIntervals(interval, true);
             case "augmented":
-                break;
+                return parseDimishedAugmentedIntervals(interval, false);
             default:
                 throw new IllegalArgumentException("Invalid interval string (invalid interval type '" + intervalType + "').");
         }
-
-        // TODO
-        return null;
     }
 
     private static Interval parsePerfectInterval(String intervalString) {
@@ -127,6 +144,68 @@ public class IntervalUtils {
             case "octave":
             case "8th":
                 toReturn = PerfectIntervals.OCTAVE;
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid interval string (invalid perfect interval '" + intervalString + "').");
+        }
+
+        return toReturn;
+    }
+
+    private static Interval parseMajorMinorIntervals(String intervalString, boolean major) {
+        Interval toReturn;
+
+        switch (intervalString) {
+            case "second":
+            case "2nd":
+                toReturn = major ? MajorIntervals._2nd : MinorIntervals._2nd;
+                break;
+            case "third":
+            case "3rd":
+                toReturn = major ? MajorIntervals._3rd : MinorIntervals._2nd;
+                break;
+            case "sixth":
+            case "6th":
+                toReturn = major ? MajorIntervals._6th : MinorIntervals._6th;
+                break;
+            case "seventh":
+            case "7th":
+                toReturn = major ? MajorIntervals._7th : MinorIntervals._7th;
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid interval string (invalid perfect interval '" + intervalString + "').");
+        }
+
+        return toReturn;
+    }
+
+    private static Interval parseDimishedAugmentedIntervals(String intervalString, boolean diminished) {
+        Interval toReturn;
+
+        switch (intervalString) {
+            case "second":
+            case "2nd":
+                toReturn = diminished ? DiminishedIntervals._2nd : AugmentedIntervals._2nd;
+                break;
+            case "third":
+            case "3rd":
+                toReturn = diminished ? DiminishedIntervals._3rd : AugmentedIntervals._3rd;
+                break;
+            case "fourth":
+            case "4th":
+                toReturn = diminished ? DiminishedIntervals._4th : AugmentedIntervals._4th;
+                break;
+            case "fifth":
+            case "5th":
+                toReturn = diminished ? DiminishedIntervals._5th : AugmentedIntervals._5th;
+                break;
+            case "sixth":
+            case "6th":
+                toReturn = diminished ? DiminishedIntervals._6th : AugmentedIntervals._6th;
+                break;
+            case "seventh":
+            case "7th":
+                toReturn = diminished ? DiminishedIntervals._7th : AugmentedIntervals._7th;
                 break;
             default:
                 throw new IllegalArgumentException("Invalid interval string (invalid perfect interval '" + intervalString + "').");

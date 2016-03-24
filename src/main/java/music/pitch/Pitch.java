@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 
 /**
- * Class that associates a number with a particular combination of base note and modification.
+ * Class that associates a number with a particular combination of base note and accidental.
  *
  * @author reedt
  */

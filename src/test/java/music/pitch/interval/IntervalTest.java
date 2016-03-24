@@ -31,6 +31,13 @@ public class IntervalTest {
     }
 
     @Test
+    public void testIntervalBelow() {
+        assertEquals(NoteBank.cs, IntervalUtils.getNoteBelow(NoteBank.e, MinorIntervals._3rd));
+
+        assertEquals(NoteBank.g3, IntervalUtils.getNoteBelow(NoteBank.c4, PerfectIntervals.PERFECT_FOURTH));
+    }
+
+    @Test
     public void testIntervalBetween() {
         assertEquals(MinorIntervals._3rd.getNumHalfSteps(), IntervalUtils.getIntervalBetween(NoteBank.ab, NoteBank.b4).getNumHalfSteps());
 

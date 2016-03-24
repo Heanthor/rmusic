@@ -1,5 +1,7 @@
 package music.play.key;
 
+import music.pitch.Note;
+
 /**
  * A key is a major or minor key signature, in sharps or flats.
  * Classes implementing this form groups of key signatures.
@@ -8,5 +10,5 @@ package music.play.key;
  * @author reedt
  */
 public interface Key {
-
+    Note getNoteRepr();
 }
