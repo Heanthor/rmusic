@@ -49,7 +49,7 @@ public class Pitch {
             combinedValue = combinedValue - 12;
 
             Note tmp = pitchFromPitchValue(combinedValue);
-            return new Note(tmp.basePitch, tmp.modification, new Octave(baseNote.octave.getNumberValue() + 1), baseNote.duration);
+            return new Note(tmp.basePitch, tmp.modification, Octave.octaveFromInteger(baseNote.octave.getNumberValue() + 1), baseNote.duration);
         } else {
             Note tmp = pitchFromPitchValue(combinedValue);
             return new Note(tmp.basePitch, tmp.modification, baseNote.octave, baseNote.duration);

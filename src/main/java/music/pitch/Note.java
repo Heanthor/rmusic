@@ -57,7 +57,7 @@ public class Note implements Comparable<Note> {
 
             try {
                 // Octave constructor handles out of range octaves
-                oct = Octave.getInstance(Integer.parseInt("" + noteString.charAt(1)));
+                oct = Octave.octaveFromInteger(Integer.parseInt("" + noteString.charAt(1)));
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Note string format incorrect (No octave found).");
             }
@@ -78,7 +78,7 @@ public class Note implements Comparable<Note> {
             }
 
             try {
-                oct = Octave.getInstance(Integer.parseInt("" + noteString.charAt(2)));
+                oct = Octave.octaveFromInteger(Integer.parseInt("" + noteString.charAt(2)));
             } catch (NumberFormatException e) {
                 throw new IllegalArgumentException("Note string format incorrect (no octave found).");
             }

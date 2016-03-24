@@ -5,56 +5,35 @@ package music.pitch;
  * Uses a singleton pattern to cut down on allocations.
  * @author reedt
  */
-public class Octave implements Comparable<Octave> {
-    private int octave;
+public enum Octave {
+    ONE,
+    TWO,
+    THREE,
+    FOUR,
+    FIVE,
+    SIX,
+    SEVEN,
+    EIGHT;
 
-    private static final Octave[] instances = new Octave[8];
+    private final int value;
+    Octave() {
+        this.value = ordinal() + 1;
+    }
 
-    static {
-        // Create static Octave instances
-        for (int i = 1; i < 8; i++) {
-            instances[i] = new Octave(i);
+    public static Octave octaveFromInteger(int number) {
+        try {
+            return Octave.values()[number - 1];
+        } catch (ArrayIndexOutOfBoundsException e) {
+            throw new IllegalArgumentException("Invalid octave (range 1-8).");
         }
     }
 
-    private Octave(int octave) {
-        this.octave = octave;
-    }
-
-    /**
-     * Returns the object representing this octave.
-     * @param octave Octave to get reference to
-     * @return the Octave object
-     */
-    public static Octave getInstance(int octave) {
-        return instances[octave];
-    }
-
-    public String toString() {
-        return "" + octave;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Octave octave1 = (Octave) o;
-
-        return octave == octave1.octave;
-    }
-
     public int getNumberValue() {
-        return this.octave;
+        return value;
     }
 
     @Override
-    public int hashCode() {
-        return octave;
-    }
-
-    @Override
-    public int compareTo(Octave o) {
-        return this.octave - o.octave;
+    public String toString() {
+        return "" + value;
     }
 }
