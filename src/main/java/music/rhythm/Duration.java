@@ -17,10 +17,9 @@ public class Duration {
         QUARTER,
         EIGHTH,
         SIXTEENTH,
-        THIRTYSECONDTH,
-        SIXTYFOURTH
+        THIRTY_SECONDTH,
+        SIXTY_FOURTH
     }
-
 
     /**
      * Duration values are represented internally as a fraction akin to the time signature of the measure.
@@ -141,7 +140,7 @@ public class Duration {
     static {
         strRepresentations.addAll(Arrays.asList("W", "H", "Q", "E", "S", "T", "X"));
         enumNames.addAll(Arrays.asList("WHOLE", "HALF", "QUARTER", "EIGHTH", "SIXTEENTH",
-                "THIRTYSECONDTH", "SIXTYFOURTH"));
+                "THIRTY_SECONDTH", "SIXTY_FOURTH"));
 
         // Convert enum into numeric duration value
         // Values are fractions of total beats in measure
@@ -150,8 +149,8 @@ public class Duration {
         durationValues.put(DurationValue.QUARTER, new Fraction(1, 4));
         durationValues.put(DurationValue.EIGHTH, new Fraction(1, 8));
         durationValues.put(DurationValue.SIXTEENTH, new Fraction(1, 16));
-        durationValues.put(DurationValue.THIRTYSECONDTH, new Fraction(1, 32));
-        durationValues.put(DurationValue.SIXTYFOURTH, new Fraction(1, 64));
+        durationValues.put(DurationValue.THIRTY_SECONDTH, new Fraction(1, 32));
+        durationValues.put(DurationValue.SIXTY_FOURTH, new Fraction(1, 64));
     }
 
     /**
@@ -161,7 +160,7 @@ public class Duration {
      * @param dot      If true, add a dot to this Duration, adding half its value to its total.
      */
     public Duration(DurationValue duration, boolean dot) {
-        if (duration == DurationValue.SIXTYFOURTH && dot) {
+        if (duration == DurationValue.SIXTY_FOURTH && dot) {
             throw new IllegalArgumentException("Duration resolution too great (cannot exceed sixty-fourth note).");
         }
         this.value = duration;

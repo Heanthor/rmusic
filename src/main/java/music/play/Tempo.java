@@ -1,10 +1,12 @@
-package music.rhythm;
+package music.play;
+
+import static music.rhythm.Duration.DurationValue;
 
 /**
  * Created by reedtrevelyan on 3/23/16.
  */
 public class Tempo {
-    public final Duration.DurationValue note;
+    public final DurationValue note;
     public final int bpm;
 
     /**
@@ -13,7 +15,7 @@ public class Tempo {
      * @param note
      * @param bpm
      */
-    public Tempo(Duration.DurationValue note, int bpm) {
+    public Tempo(DurationValue note, int bpm) {
         this.note = note;
         this.bpm = bpm;
     }

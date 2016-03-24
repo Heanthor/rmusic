@@ -44,6 +44,10 @@ public class Octave implements Comparable<Octave> {
         return octave == octave1.octave;
     }
 
+    public int getNumberValue() {
+        return this.octave;
+    }
+
     @Override
     public int hashCode() {
         return octave;
@@ -52,9 +56,5 @@ public class Octave implements Comparable<Octave> {
     @Override
     public int compareTo(Octave o) {
         return this.octave - o.octave;
-    }
-
-    public int getNumberValue() {
-        return this.octave;
     }
 }

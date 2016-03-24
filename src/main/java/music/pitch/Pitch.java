@@ -1,5 +1,8 @@
 package music.pitch;
 
+import com.google.common.collect.HashBiMap;
+import music.pitch.interval.Interval;
+
 import java.util.HashMap;
 
 /**
@@ -9,7 +12,7 @@ import java.util.HashMap;
 public class Pitch {
     private Pitch() {}
 
-    private static final HashMap<NoteValue, Integer> numValues = new HashMap<NoteValue, Integer>();
+    private static final HashBiMap<NoteValue, Integer> numValues = HashBiMap.create();
     private static final HashMap<NoteValue.Accidental, Integer> modificationValues = new HashMap<NoteValue.Accidental, Integer>();
 
     static {
@@ -34,6 +37,39 @@ public class Pitch {
             return -1;
         } else {
             return numValues.get(p) + modificationValues.get(t);
+        }
+    }
+
+    public static Note getNoteAbove(Note baseNote, Interval interval) {
+        int intervalHalfSteps = interval.getNumHalfSteps();
+        int baseNotePitchValue = getPitchValue(baseNote.basePitch, baseNote.modification);
+
+        int combinedValue = intervalHalfSteps + baseNotePitchValue;
+        if (combinedValue > 12) {
+            combinedValue = combinedValue - 12;
+
+            Note tmp = pitchFromPitchValue(combinedValue);
+            return new Note(tmp.basePitch, tmp.modification, new Octave(baseNote.octave.getNumberValue() + 1), baseNote.duration);
+        } else {
+            Note tmp = pitchFromPitchValue(combinedValue);
+            return new Note(tmp.basePitch, tmp.modification, baseNote.octave, baseNote.duration);
+        }
+
+    }
+
+    private static Note pitchFromPitchValue(int pitchValue) {
+        if (numValues.inverse().containsKey(pitchValue)) {
+            // Note is natural, appears in our table
+            return new Note(numValues.inverse().get(pitchValue), NoteValue.Accidental.NATURAL, null, null);
+        } else {
+            if (pitchValue == 0) {
+                // Wrap around
+                pitchValue = 12;
+            }
+
+            // Return lower pitch, plus a sharp
+            // Can be converted into appropriate sharp/flat based on key signature
+            return new Note(numValues.inverse().get(pitchValue - 1), NoteValue.Accidental.SHARP, null, null);
         }
     }
 }
