@@ -24,4 +24,9 @@ public enum MinorSharpKeys implements Key {
     public Note getNoteRepr() {
         return noteRepr;
     }
+
+    @Override
+    public String toString() {
+        return this.name() + " minor";
+    }
 }

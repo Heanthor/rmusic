@@ -24,4 +24,9 @@ public enum MajorSharpKeys implements Key {
     public Note getNoteRepr() {
         return noteRepr;
     }
+
+    @Override
+    public String toString() {
+        return this.name() + " major";
+    }
 }
