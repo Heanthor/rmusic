@@ -37,7 +37,7 @@ public class ParseMidiFile {
         Sequence furElise = MidiSystem.getSequence(new File("bin/midifiles/for_elise_by_beethoven.mid"));
         Sequence tchaikovskyVC1 = MidiSystem.getSequence(new File("bin/midifiles/tchop35a.mid"));
 
-        parseMidiFile(tchaikovskyVC1);
+        parseMidiFile(furElise);
     }
 
     private void parseMidiFile(Sequence sequence) {
