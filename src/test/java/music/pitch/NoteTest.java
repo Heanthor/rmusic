@@ -38,6 +38,9 @@ public class NoteTest {
         // Comparison works even if no duration is given
         assertTrue(NoteBank.e.equalsPitchOnly(
                 new Note(NoteValue.F, NoteValue.Accidental.FLAT, NoteBank.e.octave, null)));
+
+        // G#4 is not equal to Ab5 since octave wraps around C, not A
+        assertNotEquals(NoteBank.gs, NoteBank.ab5);
     }
 
     @Test
@@ -71,5 +74,9 @@ public class NoteTest {
 
         // A4 is higher than G3
         assertTrue(NoteBank.a4.compareTo(NoteBank.g3) > 0);
+
+        // C4 is lower than B4
+        assertTrue(NoteBank.c4.compareTo(NoteBank.b4) < 0);
+
     }
 }

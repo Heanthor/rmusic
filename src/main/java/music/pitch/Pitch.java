@@ -21,13 +21,13 @@ public class Pitch {
     static {
         // Create association between pitch and integer
         // Each increment represents one half-step
-        numValues.put(NoteValue.A, 1);
-        numValues.put(NoteValue.B, 3);
-        numValues.put(NoteValue.C, 4);
-        numValues.put(NoteValue.D, 6);
-        numValues.put(NoteValue.E, 8);
-        numValues.put(NoteValue.F, 9);
-        numValues.put(NoteValue.G, 11);
+        numValues.put(NoteValue.C, 1);
+        numValues.put(NoteValue.D, 3);
+        numValues.put(NoteValue.E, 5);
+        numValues.put(NoteValue.F, 6);
+        numValues.put(NoteValue.G, 8);
+        numValues.put(NoteValue.A, 10);
+        numValues.put(NoteValue.B, 12);
 
         // Associate note modifications to values
         modificationValues.put(NoteValue.Accidental.NATURAL, 0);

@@ -15,18 +15,18 @@ import static org.junit.Assert.*;
  */
 public class ChordTest {
     // Minor 3rd
-    Chord c1 = new Chord(NoteBank.a4, NoteBank.c4);
-    Chord c2 = new Chord(NoteBank.c5, NoteBank.a4, NoteBank.c4);
+    private Chord c1 = new Chord(NoteBank.a4, NoteBank.c5);
+    private Chord c2 = new Chord(NoteBank.c5, NoteBank.a4, NoteBank.c4);
 
-    Chord c2_1 = new Chord(NoteBank.a4, MinorIntervals._3rd);
+    private Chord c2_1 = new Chord(NoteBank.a4, MinorIntervals._3rd);
 
     // Cmaj triad
-    Chord cmaj = new Chord(NoteBank.c4, NoteBank.e, new Note("G4:Q"));
-    Chord cmaj_2 = new Chord(NoteBank.c4, MajorIntervals._3rd, PerfectIntervals.PERFECT_FIFTH);
+    private Chord cmaj = new Chord(NoteBank.c4, NoteBank.e, new Note("G4:Q"));
+    private Chord cmaj_2 = new Chord(NoteBank.c4, MajorIntervals._3rd, PerfectIntervals.PERFECT_FIFTH);
 
     // Gm7
-    Chord gmin7 = new Chord(NoteBank.g3, new Note("Bb4:Q"), new Note("D4:Q"), new Note("F4:Q"));
-    Chord gmin7_2 = new Chord(NoteBank.g3, MinorIntervals._3rd, PerfectIntervals.PERFECT_FIFTH, MinorIntervals._7th);
+    private Chord gmin7 = new Chord(NoteBank.g3, new Note("Bb3:Q"), new Note("D4:Q"), new Note("F4:Q"));
+    private Chord gmin7_2 = new Chord(NoteBank.g3, MinorIntervals._3rd, PerfectIntervals.PERFECT_FIFTH, MinorIntervals._7th);
 
     @Test
     public void testIntervalConstructor() {
@@ -40,9 +40,7 @@ public class ChordTest {
 
     @Test
     public void testToString() throws Exception {
-        assertEquals("A4-C4", c1.toString());
+        assertEquals("A4-C5", c1.toString());
         assertEquals("A4-C4-C5", c2.toString());
-
-
     }
 }

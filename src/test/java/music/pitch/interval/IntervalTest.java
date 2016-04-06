@@ -24,7 +24,7 @@ public class IntervalTest {
         assertEquals(NoteBank.c5, IntervalUtils.getNoteAbove(NoteBank.c4, PerfectIntervals.OCTAVE));
 
         // A and G are stranger corner cases
-        assertEquals(NoteBank.c4, IntervalUtils.getNoteAbove(NoteBank.ab, MajorIntervals._3rd));
+        assertEquals(NoteBank.c5, IntervalUtils.getNoteAbove(NoteBank.ab, MajorIntervals._3rd));
 
         // A and G are stranger corner cases
         assertEquals(NoteBank.b4, IntervalUtils.getNoteAbove(NoteBank.ab, MinorIntervals._3rd));
@@ -41,7 +41,7 @@ public class IntervalTest {
     public void testIntervalBetween() {
         assertEquals(MinorIntervals._3rd.getNumHalfSteps(), IntervalUtils.getIntervalBetween(NoteBank.ab, NoteBank.b4).getNumHalfSteps());
 
-        assertEquals(MajorIntervals._3rd.getNumHalfSteps(), IntervalUtils.getIntervalBetween(NoteBank.ab, NoteBank.c4).getNumHalfSteps());
+        assertEquals(MajorIntervals._3rd.getNumHalfSteps(), IntervalUtils.getIntervalBetween(NoteBank.ab, NoteBank.c5).getNumHalfSteps());
 
         assertEquals(PerfectIntervals.PERFECT_FOURTH.getNumHalfSteps(), IntervalUtils.getIntervalBetween(NoteBank.g3, NoteBank.c4).getNumHalfSteps());
 

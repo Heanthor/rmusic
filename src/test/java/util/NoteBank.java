@@ -29,4 +29,6 @@ public class NoteBank {
     public static Note g5 = new Note(NoteValue.G, NoteValue.Accidental.NATURAL, Octave.FIVE);
     public static Note d3 = new Note(NoteValue.D, NoteValue.Accidental.NATURAL, Octave.THREE);
     public static Note a4 = new Note(NoteValue.A, NoteValue.Accidental.NATURAL, Octave.FOUR);
+    public static Note ab5 = new Note(NoteValue.A, NoteValue.Accidental.FLAT, Octave.FIVE);
+
 }

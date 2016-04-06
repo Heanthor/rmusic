@@ -206,11 +206,6 @@ public class Note implements BasicNote, Comparable<Note> {
     public boolean equalsPitchOnly(Note n) {
         // Notes must be in the same octave to be equal
 
-        // No corner case; notes are equal, octaves aren't
-        if (!(this.octave.equals(n.octave)) && this.basePitch == n.basePitch) {
-            return false;
-        }
-
         // Octave changes on C, corner case
         if (this.basePitch == NoteValue.C || n.basePitch == NoteValue.C) {
             // Not more than one octave separates them
@@ -219,10 +214,17 @@ public class Note implements BasicNote, Comparable<Note> {
             }
         }
 
+        // No corner case; notes are equal, octaves aren't
+        if (!(this.octave.equals(n.octave)) && this.pitchValue == n.pitchValue) {
+            return false;
+        }
+
         // Enharmonic notes are equal pitch even though notated differently
-        // Special case for wrapping around A# and Gb, or G# and Ab
-        return this.pitchValue == 12 && n.pitchValue == 0
+        // Special case for wrapping around B# and C, or Cb and B
+        return     this.pitchValue == 13 && n.pitchValue == 1
+                || this.pitchValue == 1 && n.pitchValue == 13
                 || this.pitchValue == 0 && n.pitchValue == 12
+                || this.pitchValue == 12 && n.pitchValue == 0
                 || this.pitchValue == n.pitchValue;
     }
 
