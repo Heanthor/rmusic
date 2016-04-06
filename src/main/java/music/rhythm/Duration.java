@@ -128,6 +128,7 @@ public class Duration {
             return numerator + "/" + denominator;
         }
     }
+
     // Allow mapping of custom strings to enum DurationValue enum
     public static final ArrayList<String> strRepresentations = new ArrayList<String>();
     public static final ArrayList<String> enumNames = new ArrayList<String>();
@@ -175,7 +176,21 @@ public class Duration {
     }
 
     /**
+     * Parses a duration string to create a Duration object.
+     * The string takes this form: [Duration][(Optional) d]
+     * @param durationString Duration string
+     */
+    public Duration(String durationString) {
+        Duration temp = Duration.parseDurationString(durationString);
+
+        this.value = temp.value;
+        this.dot = temp.dot;
+        this.durationValue = temp.durationValue;
+    }
+
+    /**
      * Converts a fraction representing a Duration into that Duration object.
+     *
      * @param f Fraction to convert
      * @return The Duration object represented by that Fraction, with note and dot.
      */
@@ -196,6 +211,7 @@ public class Duration {
 
     /**
      * Parses a duration string into its respective object.
+     *
      * @param durationString The string to parse in form [Duration][(Optional) d]
      * @return The created object
      */
@@ -235,6 +251,20 @@ public class Duration {
         }
 
         return fractionToDuration(total);
+    }
+
+    /**
+     * Compare the current object to the given Duration, and return the ratio.
+     * <p/>
+     * For example, comparing the current object half note to a quarter note will return 0.5,
+     * as a quarter note is half the duration of a half note.
+     *
+     * @param d The duration to compare the current object to
+     * @return The ratio of the current object's value to the argument.
+     */
+    public double getDurationRatio(Duration d) {
+        return durationValue.multiply(
+                new Fraction(d.durationValue.denominator, d.durationValue.numerator)).getDoubleValue();
     }
 
     @Override

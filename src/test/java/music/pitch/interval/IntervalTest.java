@@ -1,5 +1,6 @@
 package music.pitch.interval;
 
+import music.pitch.Note;
 import org.junit.Test;
 import util.NoteBank;
 
@@ -18,16 +19,16 @@ public class IntervalTest {
     public void testAddingInterval() {
         assertEquals(NoteBank.e, IntervalUtils.getNoteAbove(NoteBank.cs, MinorIntervals._3rd));
 
-        // Tests wrap around
         assertEquals(NoteBank.c4, IntervalUtils.getNoteAbove(NoteBank.g3, PerfectIntervals.PERFECT_FOURTH));
 
         assertEquals(NoteBank.c5, IntervalUtils.getNoteAbove(NoteBank.c4, PerfectIntervals.OCTAVE));
 
-        // A and G are stranger corner cases
         assertEquals(NoteBank.c5, IntervalUtils.getNoteAbove(NoteBank.ab, MajorIntervals._3rd));
 
-        // A and G are stranger corner cases
         assertEquals(NoteBank.b4, IntervalUtils.getNoteAbove(NoteBank.ab, MinorIntervals._3rd));
+
+        // Test wrap around, corner cases
+        assertEquals(new Note("Eb4:Q"), IntervalUtils.getNoteAbove(NoteBank.c4, MinorIntervals._3rd));
     }
 
     @Test
@@ -35,6 +36,8 @@ public class IntervalTest {
         assertEquals(NoteBank.cs, IntervalUtils.getNoteBelow(NoteBank.e, MinorIntervals._3rd));
 
         assertEquals(NoteBank.g3, IntervalUtils.getNoteBelow(NoteBank.c4, PerfectIntervals.PERFECT_FOURTH));
+
+        assertEquals(new Note("A3:Q"), IntervalUtils.getNoteBelow(NoteBank.c4, MinorIntervals._3rd));
     }
 
     @Test

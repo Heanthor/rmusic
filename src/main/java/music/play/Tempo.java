@@ -1,6 +1,6 @@
 package music.play;
 
-import static music.rhythm.Duration.DurationValue;
+import music.rhythm.Duration;
 
 /**
  * Mutable class representing tempo. As the tempo can change during a piece of music,
@@ -9,7 +9,7 @@ import static music.rhythm.Duration.DurationValue;
  * @author reedt
  */
 public class Tempo {
-    public DurationValue note;
+    public Duration note;
     public int bpm;
 
     /**
@@ -18,8 +18,25 @@ public class Tempo {
      * @param note
      * @param bpm
      */
-    public Tempo(DurationValue note, int bpm) {
+    public Tempo(Duration note, int bpm) {
         this.note = note;
         this.bpm = bpm;
+    }
+
+    public enum CommonTempos {
+        LARGO(40),
+        LARGHETTO(60),
+        ADAGIO(66),
+        ANDANTE(76),
+        MODERATO(108),
+        ALLEGRO(120),
+        PRESTO(168),
+        PRESTISSIMO(200);
+
+        public final int bpm;
+
+        CommonTempos(int bpm) {
+            this.bpm = bpm;
+        }
     }
 }
