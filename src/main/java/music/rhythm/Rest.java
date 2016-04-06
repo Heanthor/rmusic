@@ -15,9 +15,20 @@ public class Rest extends Note {
         super(null, null, null, d);
     }
 
+    public static Rest parseRestString(String restString) {
+        Duration d;
+        if (restString.charAt(0) != 'R') {
+            throw new IllegalArgumentException("Invalid rest string provided " + restString + ".");
+        } else {
+            d = Duration.parseDurationString(restString.substring(2));
+
+            return new Rest(d);
+        }
+    }
+
     @Override
     public String toString() {
-        return "Rest, " + duration.toString();
+        return "Rest, " + super.getDuration().toString();
     }
 
     @Override
@@ -27,6 +38,10 @@ public class Rest extends Note {
 
         Rest rest = (Rest) o;
 
-        return this.duration.equals(rest.duration);
+        return super.getDuration().equals(rest.getDuration());
+    }
+
+    public String toNoteString() {
+        return "R:" + super.getDuration().getDurationCode();
     }
 }

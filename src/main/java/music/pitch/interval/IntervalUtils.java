@@ -77,10 +77,10 @@ public class IntervalUtils {
 
             Note tmp = Pitch.pitchFromPitchValue(combinedValue);
             return new Note(tmp.basePitch, tmp.accidental, Octave.octaveFromInteger(baseNote.octave.getNumberValue() + 1),
-                    baseNote.duration);
+                    baseNote.getDuration());
         } else {
             Note tmp = Pitch.pitchFromPitchValue(combinedValue);
-            return new Note(tmp.basePitch, tmp.accidental, baseNote.octave, baseNote.duration);
+            return new Note(tmp.basePitch, tmp.accidental, baseNote.octave, baseNote.getDuration());
         }
     }
 
@@ -95,10 +95,10 @@ public class IntervalUtils {
 
             Note tmp = Pitch.pitchFromPitchValue(combinedValue);
             return new Note(tmp.basePitch, tmp.accidental, Octave.octaveFromInteger(baseNote.octave.getNumberValue() - 1),
-                    baseNote.duration);
+                    baseNote.getDuration());
         } else {
             Note tmp = Pitch.pitchFromPitchValue(combinedValue);
-            return new Note(tmp.basePitch, tmp.accidental, baseNote.octave, baseNote.duration);
+            return new Note(tmp.basePitch, tmp.accidental, baseNote.octave, baseNote.getDuration());
         }
     }
 

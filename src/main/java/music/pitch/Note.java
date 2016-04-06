@@ -16,7 +16,8 @@ public class Note implements BasicNote, Comparable<Note> {
     public final NoteValue basePitch;
     public final NoteValue.Accidental accidental;
     public final Octave octave;
-    public final Duration duration;
+
+    private final Duration duration;
 
     // This field provides ease of comparison between Notes
     public final int pitchValue;
@@ -171,6 +172,11 @@ public class Note implements BasicNote, Comparable<Note> {
         return toReturn;
     }
 
+    @Override
+    public String toNoteString() {
+        return pitchOnlyToString() + ":" + duration.getDurationCode();
+    }
+
     /**
      * A note is equal to another note when it represents the same sounding pitch,
      * as well as the same duration.
@@ -248,5 +254,10 @@ public class Note implements BasicNote, Comparable<Note> {
             // In different octaves and not enharmonic
             return this.octave.getNumberValue() - o.octave.getNumberValue();
         }
+    }
+
+    @Override
+    public Duration getDuration() {
+        return duration;
     }
 }

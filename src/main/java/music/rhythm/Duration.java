@@ -228,9 +228,11 @@ public class Duration {
             return new Duration(DurationValue.valueOf(Duration.enumNames.get(ordinal)), false);
         } else if (durationString.length() == 2 && durationString.charAt(1) == 'd') {
             ordinal = Duration.strRepresentations.indexOf("" + durationString.charAt(0));
+
             if (ordinal == -1) {
                 throw new IllegalArgumentException("Note string format incorrect (invalid duration string '" + durationString + "').");
             }
+
             return new Duration(DurationValue.valueOf(Duration.enumNames.get(ordinal)), true);
         } else {
             throw new IllegalArgumentException("Note string format incorrect (invalid duration string '" + durationString + "').");
@@ -265,6 +267,15 @@ public class Duration {
     public double getDurationRatio(Duration d) {
         return durationValue.multiply(
                 new Fraction(d.durationValue.denominator, d.durationValue.numerator)).getDoubleValue();
+    }
+
+    /**
+     * Get the code for this Duration, E.g.
+     * @return
+     */
+    public String getDurationCode() {
+        int enumName = Duration.enumNames.indexOf(value.name());
+        return strRepresentations.get(enumName) + (dot ? "d" : "");
     }
 
     @Override
