@@ -11,33 +11,33 @@ import javax.sound.sampled.SourceDataLine;
 public class PlaySound {
     public static void main(String[] args) throws LineUnavailableException {
         final AudioFormat af =
-                new AudioFormat(Note.SAMPLE_RATE, 8, 1, true, true);
+                new AudioFormat(EnumNote.SAMPLE_RATE, 8, 1, true, true);
         SourceDataLine line = AudioSystem.getSourceDataLine(af);
-        line.open(af, Note.SAMPLE_RATE);
+        line.open(af, EnumNote.SAMPLE_RATE);
         line.start();
-        for  (Note n : Note.values()) {
+        for  (EnumNote n : EnumNote.values()) {
             play(line, n, 500);
-            play(line, Note.REST, 10);
+            play(line, EnumNote.REST, 10);
         }
         line.drain();
         line.close();
     }
 
-    private static void play(SourceDataLine line, Note note, int ms) {
-        ms = Math.min(ms, Note.SECONDS * 1000);
-        int length = Note.SAMPLE_RATE * ms / 1000;
+    private static void play(SourceDataLine line, EnumNote note, int ms) {
+        ms = Math.min(ms, EnumNote.SECONDS * 1000);
+        int length = EnumNote.SAMPLE_RATE * ms / 1000;
         int count = line.write(note.data(), 0, length);
     }
 }
 
-enum Note {
+enum EnumNote {
 
     REST, A4, A4$, B4, C4, C4$, D4, D4$, E4, F4, F4$, G4, G4$, A5;
     public static final int SAMPLE_RATE = 16 * 1024; // ~16KHz
     public static final int SECONDS = 2;
     private byte[] sin = new byte[SECONDS * SAMPLE_RATE];
 
-    Note() {
+    EnumNote() {
         int n = this.ordinal();
         if (n > 0) {
             double exp = ((double) n - 1) / 12d;

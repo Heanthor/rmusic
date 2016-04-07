@@ -1,14 +1,17 @@
 package midi;
 
+import music.pitch.*;
+import music.play.Tempo;
 import music.play.key.Key;
 import music.play.key.KeySignature;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Stack;
 
 import javax.sound.midi.*;
 
-public class ParseMidiFile {
+public class MidiFileParser {
     // Sami Koivu on StackOverflow for skeleton
 
     // meta flags
@@ -30,10 +33,15 @@ public class ParseMidiFile {
     private int channelNumber = -1;
 
     public static void main(String[] args) throws Exception {
-        new ParseMidiFile().init();
+        new MidiFileParser().loadAndParseFile();
     }
 
-    private void init() throws InvalidMidiDataException, IOException {
+    /**
+     * Represents the current tempo of the parsed file. Defaults to quarter = 120bpm.
+     */
+    private Tempo fileTempo = new Tempo(120);
+
+    private void loadAndParseFile() throws InvalidMidiDataException, IOException {
         Sequence furElise = MidiSystem.getSequence(new File("bin/midifiles/for_elise_by_beethoven.mid"));
         Sequence tchaikovskyVC1 = MidiSystem.getSequence(new File("bin/midifiles/tchop35a.mid"));
 
@@ -41,7 +49,16 @@ public class ParseMidiFile {
     }
 
     private void parseMidiFile(Sequence sequence) {
+        float divisionType = sequence.getDivisionType();
+        float resolution = sequence.getResolution();
+
         int trackNumber = 0;
+        Stack<MidiNoteTuple> openNotes = new Stack<>();
+
+        // tick size as a fraction of a quarter note
+        // or, absolute time of ticks per frame
+        double tickSize = calculateTickSize(divisionType, resolution);
+
         // loops chunks
         for (Track track : sequence.getTracks()) {
 
@@ -51,7 +68,8 @@ public class ParseMidiFile {
 
             for (int i = 0; i < track.size(); i++) {
                 MidiEvent event = track.get(i);
-                System.out.print("@" + event.getTick() + " ");
+                long tickTime = event.getTick();
+                System.out.print("@" + tickTime + " ");
                 MidiMessage message = event.getMessage();
 
                 // Channel voice, channel mode, system common, system realtime
@@ -67,6 +85,12 @@ public class ParseMidiFile {
                         String noteName = NOTE_NAMES[note];
                         int velocity = sm.getData2();
 
+                        // This note is currently playing, push to stack
+                        // Give note a temporary quarter note time, this will change
+                        String noteString = noteName + octave + ":Q";
+
+                        openNotes.push(new MidiNoteTuple(new Note(noteString), tickTime));
+
                         System.out.println("Note on, " + noteName + octave + " key=" + key + " velocity: " + velocity);
                     } else if (sm.getCommand() == ShortMessage.NOTE_OFF) {
                         int key = sm.getData1();
@@ -74,6 +98,14 @@ public class ParseMidiFile {
                         int note = key % 12;
                         String noteName = NOTE_NAMES[note];
                         int velocity = sm.getData2();
+
+                        String noteString = noteName + octave + ":Q";
+                        Note temp = new Note(noteString);
+
+                        if (temp.equals(openNotes.peek().note)) {
+                            // Found the associated closing event for this note, so calculate its duration
+                            long endTime = tickTime;
+                        }
 
                         System.out.println("Note off, " + noteName + octave + " key=" + key + " velocity: " + velocity);
                     } else {
@@ -94,20 +126,42 @@ public class ParseMidiFile {
         }
     }
 
+    private double calculateTickSize(float divisionType, float resolution) {
+        double tickSize;
+
+        if (divisionType == Sequence.PPQ) {
+            System.out.println("Division Type: PPQ");
+            double ticksPerSecond = resolution * (fileTempo.bpm / 60);
+            tickSize = 1.0 / ticksPerSecond;
+        } else {
+            double framesPerSecond =
+                    (divisionType == Sequence.SMPTE_24 ? 24
+                            : (divisionType == Sequence.SMPTE_25 ? 25
+                            : (divisionType == Sequence.SMPTE_30 ? 30
+                            : (divisionType == Sequence.SMPTE_30DROP ?
+
+                            29.97: -1))));
+            double ticksPerSecond = resolution * framesPerSecond;
+            tickSize = 1.0 / ticksPerSecond;
+        }
+        return tickSize;
+    }
+
     private void parseMetaMessage(MetaMessage message) {
         byte[] raw = message.getData();
 
         int[] hexBytes = signedToUnsignedBytes(raw);
 
         if (message.getType() == TEMPO_MARKING) {
-//                            int tempo = (data[0] & 0xff) << 16 | (data[1] & 0xff) << 8 | (data[2] & 0xff);
-
             // microseconds per quarter note
             // tempo = tt tt tt
             int tempo = bigEndianByteArrayToDecimal(raw);
             // convert to beats per minute
-            int bpm = 60000000 / tempo;
+            int bpm = (int) Math.round(60000000 / (double) tempo);
             System.out.printf("Tempo marking: %d bpm\n", bpm);
+
+            // save file tempo
+            fileTempo = new Tempo(bpm);
         } else if (message.getType() == TIME_SIGNATURE) {
             int numerator = hexBytes[0];
             int denominator = (int) Math.pow(2, hexBytes[1]);
@@ -168,5 +222,20 @@ public class ParseMidiFile {
         }
 
         return toReturn;
+    }
+
+    /**
+     * Container for a Note, and when it started playing.
+     * <p>
+     * For use in calculating approximate note value based on ms and tempo.
+     */
+    private class MidiNoteTuple {
+        public final Note note;
+        public final long startTime;
+
+        public MidiNoteTuple(Note note, long startTime) {
+            this.note = note;
+            this.startTime = startTime;
+        }
     }
 }

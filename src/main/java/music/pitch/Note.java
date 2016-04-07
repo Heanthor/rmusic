@@ -17,7 +17,7 @@ public class Note implements BasicNote, Comparable<Note> {
     public final NoteValue.Accidental accidental;
     public final Octave octave;
 
-    private final Duration duration;
+    private Duration duration;
 
     // This field provides ease of comparison between Notes
     public final int pitchValue;
@@ -259,5 +259,14 @@ public class Note implements BasicNote, Comparable<Note> {
     @Override
     public Duration getDuration() {
         return duration;
+    }
+
+    /**
+     * Set this note's Duration to the given duration.
+     * Useful if this Note is partially constructed.
+     * @param d The duration to set.
+     */
+    public void setDuration(Duration d) {
+        this.duration = d;
     }
 }

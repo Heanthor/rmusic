@@ -1,5 +1,7 @@
 package music.play;
 
+import music.pitch.BasicNote;
+import music.pitch.Note;
 import music.play.key.Key;
 import music.play.key.KeySignature;
 

@@ -12,7 +12,6 @@ import music.play.Tempo;
 import music.play.TimeSignature;
 import music.play.Voice;
 import music.play.key.MajorSharpKeys;
-import music.rhythm.Duration;
 import music.rhythm.Rest;
 
 import java.util.ArrayList;
@@ -36,7 +35,7 @@ public class PlaySoundMidi {
 
     public static void main(String[] args) {
         PlaySoundMidi m = new PlaySoundMidi();
-        Tempo t = new Tempo(new Duration("Q"), Tempo.CommonTempos.ALLEGRO.bpm);
+        Tempo t = new Tempo(Tempo.CommonTempos.ALLEGRO);
 
         ArrayList<BasicNote> notes = new ArrayList<>();
         notes.add(new Note("C5:H"));
@@ -60,12 +59,12 @@ public class PlaySoundMidi {
         notes.add(new Note("F5:S"));
         notes.add(new Note("E5:H"));
 
-        Staff mozart545 = new Staff(t,
+        Staff mozartK545 = new Staff(t,
                 MajorSharpKeys.C,
                 new TimeSignature(4, TimeSignature.DenominatorChoices._4),
                 new Voice[]{new Voice(notes)});
 
-        m.playStaff(mozart545);
+        m.playStaff(mozartK545);
 
     }
 
