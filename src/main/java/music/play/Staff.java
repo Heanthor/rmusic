@@ -30,4 +30,38 @@ public class Staff {
         this.keySignature = key.getKeySignature();
         this.timeSignature = timeSignature;
     }
+
+    public Staff(Tempo tempo, TimeSignature ts, Voice[] voices) {
+        this.tempo = tempo;
+        this.voices = Arrays.asList(voices);
+        keySignature = null;
+        timeSignature = ts;
+    }
+
+    public Staff(Tempo tempo, TimeSignature ts, List<Voice> voices) {
+        this.tempo = tempo;
+        this.voices = voices;
+        keySignature = null;
+        timeSignature = ts;
+    }
+
+    @Override
+    public String toString() {
+        String kString;
+
+        if (keySignature == null) {
+            kString = "null";
+        } else {
+            kString = keySignature.toString();
+        }
+
+        String staffInfo = String.format("Staff: Tempo: %d bpm, Key %s, Time Signature %d/%d\n",
+                tempo.bpm, kString, timeSignature.getNumerator(), timeSignature.getDenominator());
+        String voiceString = "";
+        for (Voice v: voices) {
+            voiceString += v.toString() + "\n";
+        }
+
+        return staffInfo + "\n" + voiceString;
+    }
 }

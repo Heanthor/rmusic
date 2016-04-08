@@ -26,6 +26,24 @@ public class TimeSignature {
         public int getValue() {
             return value;
         }
+
+        /**
+         * Get the choice represented by the given int.
+         * Throws ArrayOutOfBoundsException if the int is not valid.
+         * @param choice 2, 4, or 8.
+         * @return The corresponding enum.
+         */
+        public static DenominatorChoices getByInt(int choice) {
+            int c = (int)Math.pow(2, choice);
+
+            for (DenominatorChoices d: values()) {
+                if (d.value == c) {
+                    return d;
+                }
+            }
+
+            return null;
+        }
     }
 
     public TimeSignature(int numerator, DenominatorChoices denominator) {

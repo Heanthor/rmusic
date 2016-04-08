@@ -22,6 +22,8 @@ public class RestTest {
 
         assertEquals(r, r2);
 
+        assertEquals("R:Ed", r.toNoteString());
+
     }
 
 }

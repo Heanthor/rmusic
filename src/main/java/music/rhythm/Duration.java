@@ -25,7 +25,7 @@ public class Duration {
     /**
      * Duration values are represented internally as a fraction akin to the time signature of the measure.
      * E.g. a dotted half note in 3/4 time would be represented as the Fraction 3/4.
-     * <p/>
+     * <p>
      * An eighth note is represented by the Fraction 1/8 in both 4/4 and 6/8 time, as another example.
      */
     private static class Fraction {
@@ -35,6 +35,19 @@ public class Duration {
         public Fraction(int numerator, int denominator) {
             this.numerator = numerator;
             this.denominator = denominator;
+        }
+
+        /**
+         * Constructs a Fraction out of an irrational number.
+         * Tries its best to round to the closest Fraction
+         *
+         * @param decimal The decimal to convert.
+         */
+        public Fraction(double decimal) {
+            Fraction temp = doubleToFraction(decimal);
+
+            this.numerator = temp.numerator;
+            this.denominator = temp.denominator;
         }
 
         /**
@@ -103,6 +116,27 @@ public class Duration {
             f.denominator /= gcd;
 
             return f;
+        }
+
+        /**
+         * Gets the fraction representation of a double.
+         * Returns in simplest form.
+         * @param d The double to evaluate.
+         * @return A fraction best matching this double.
+         */
+        private Fraction doubleToFraction(double d) {
+            // ktm5124 on StackOverflow
+            String s = String.valueOf(d);
+            int digitsDec = s.length() - 1 - s.indexOf('.');
+
+            int denom = 1;
+            for (int i = 0; i < digitsDec; i++) {
+                d *= 10;
+                denom *= 10;
+            }
+            int num = (int) Math.round(d);
+
+            return simplify(new Fraction(num, denom));
         }
 
         @Override
@@ -178,6 +212,7 @@ public class Duration {
     /**
      * Parses a duration string to create a Duration object.
      * The string takes this form: [Duration][(Optional) d]
+     *
      * @param durationString Duration string
      */
     public Duration(String durationString) {
@@ -257,7 +292,7 @@ public class Duration {
 
     /**
      * Compare the current object to the given Duration, and return the ratio.
-     * <p/>
+     * <p>
      * For example, comparing the current object half note to a quarter note will return 0.5,
      * as a quarter note is half the duration of a half note.
      *
@@ -270,8 +305,25 @@ public class Duration {
     }
 
     /**
+     * Gets the Duration represented as a fraction of the current duration.
+     * For example, if the current object is a quarter note, a ratio of 0.5 would return an eighth note.
+     *
+     * @param ratio The base note to calculate ratio over
+     * @param ratio The ratio of the desired Duration to the current object.
+     * @return The Duration best representing this ratio.
+     */
+    public static Duration getDurationByRatio(Duration base, double ratio) {
+        Fraction ratioFraction = new Fraction(ratio);
+        Fraction newDurationRatio = ratioFraction.multiply(base.durationValue);
+
+        return fractionToDuration(newDurationRatio);
+    }
+
+    /**
      * Get the code for this Duration, E.g.
-     * @return
+     * Quarter -> Q
+     * Dotted eighth -> Ed
+     * @return The duration code for this Duration
      */
     public String getDurationCode() {
         int enumName = Duration.enumNames.indexOf(value.name());

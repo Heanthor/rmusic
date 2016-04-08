@@ -1,13 +1,18 @@
 package midi;
 
 import music.pitch.*;
+import music.play.Staff;
 import music.play.Tempo;
+import music.play.TimeSignature;
+import music.play.Voice;
 import music.play.key.Key;
 import music.play.key.KeySignature;
+import music.rhythm.Duration;
+import music.rhythm.Rest;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Stack;
+import java.util.*;
 
 import javax.sound.midi.*;
 
@@ -32,36 +37,44 @@ public class MidiFileParser {
      */
     private int channelNumber = -1;
 
-    public static void main(String[] args) throws Exception {
-        new MidiFileParser().loadAndParseFile();
-    }
-
     /**
      * Represents the current tempo of the parsed file. Defaults to quarter = 120bpm.
      */
     private Tempo fileTempo = new Tempo(120);
+    private TimeSignature timeSignature = new TimeSignature(4, TimeSignature.DenominatorChoices._4);
 
-    private void loadAndParseFile() throws InvalidMidiDataException, IOException {
-        Sequence furElise = MidiSystem.getSequence(new File("bin/midifiles/for_elise_by_beethoven.mid"));
-        Sequence tchaikovskyVC1 = MidiSystem.getSequence(new File("bin/midifiles/tchop35a.mid"));
+    public static void main(String[] args) throws Exception {
+        File furElise = new File("bin/midifiles/for_elise_by_beethoven.mid");
+        File tchaikovskyVC1 = new File("bin/midifiles/tchop35a.mid");
+        Staff f = new MidiFileParser().loadAndParseFile(furElise);
 
-        parseMidiFile(furElise);
+        System.out.println(f.toString());
     }
 
-    private void parseMidiFile(Sequence sequence) {
-        float divisionType = sequence.getDivisionType();
+    public Staff loadAndParseFile(File f) throws InvalidMidiDataException, IOException {
+        Sequence sequence = MidiSystem.getSequence(f);
+
+        return parseMidiFile(sequence);
+    }
+
+    private Staff parseMidiFile(Sequence sequence) {
+        if (sequence.getDivisionType() != Sequence.PPQ) {
+            System.err.println("Can't parse this MIDI format into notes!");
+            System.exit(-1);
+        }
+        // number of ticks per quarter note in ppq
         float resolution = sequence.getResolution();
 
         int trackNumber = 0;
-        Stack<MidiNoteTuple> openNotes = new Stack<>();
+        Map<Note, MidiNoteTuple> soundingNotes = new HashMap<>();
 
-        // tick size as a fraction of a quarter note
-        // or, absolute time of ticks per frame
-        double tickSize = calculateTickSize(divisionType, resolution);
+        // Dynamically grow based on need for more voices
+        ArrayList<Voice> voices = new ArrayList<>();
+        // add primary voice
+        voices.add(new Voice(new ArrayList<>()));
 
         // loops chunks
         for (Track track : sequence.getTracks()) {
-
             trackNumber++;
             System.out.println("Track " + trackNumber + ": size = " + track.size());
             System.out.println();
@@ -88,8 +101,7 @@ public class MidiFileParser {
                         // This note is currently playing, push to stack
                         // Give note a temporary quarter note time, this will change
                         String noteString = noteName + octave + ":Q";
-
-                        openNotes.push(new MidiNoteTuple(new Note(noteString), tickTime));
+                        soundingNotes.put(new Note(noteString), new MidiNoteTuple(tickTime, i));
 
                         System.out.println("Note on, " + noteName + octave + " key=" + key + " velocity: " + velocity);
                     } else if (sm.getCommand() == ShortMessage.NOTE_OFF) {
@@ -99,12 +111,48 @@ public class MidiFileParser {
                         String noteName = NOTE_NAMES[note];
                         int velocity = sm.getData2();
 
+                        // Create a note equal to stored one, to get its tuple
                         String noteString = noteName + octave + ":Q";
                         Note temp = new Note(noteString);
 
-                        if (temp.equals(openNotes.peek().note)) {
-                            // Found the associated closing event for this note, so calculate its duration
-                            long endTime = tickTime;
+                        // Find the associated closing event for this note, and calculate its duration
+                        // Remove it as well, since it is no longer sounding
+                        MidiNoteTuple mnp = soundingNotes.remove(temp);
+
+                        long noteTicks = tickTime - mnp.startTime;
+                        double fractionOfQuarterNote = roundDoubleToCleanFraction(noteTicks / resolution);
+                        Duration approxDuration = Duration.getDurationByRatio(new Duration("Q"), fractionOfQuarterNote);
+                        temp.setDuration(approxDuration);
+
+                        // Have all info about note, calculate voicing
+
+                        // primary voice is playing a note, so another voice must play this one
+                        // notes are added to available voices as needed, or a new voice is added
+                        int voiceToPlayIndex = soundingNotes.size();
+
+                        if (voices.size() <= voiceToPlayIndex) {
+                            // Allocate a new voice
+                            Voice v = new Voice(new ArrayList<>(), voices.size());
+                            // Fill rests up to the current duration
+                            int numNotes = voices.get(0).size();
+
+                            for (int j = 0; j < numNotes; j++) {
+                                v.addNote(new Rest(approxDuration));
+                            }
+                            v.addNote(temp);
+                            voices.add(v);
+                        } else {
+                            // Give the lowest voice the note
+                            voices.get(voiceToPlayIndex).addNote(temp);
+                        }
+
+                        // Give every other voice a rest of the same duration to keep in sync
+                        Rest r = new Rest(approxDuration);
+                        for (int j = 0; j < voices.size(); j++) {
+                            if (j != voiceToPlayIndex) {
+                                Voice v = voices.get(j);
+                                v.addNote(r);
+                            }
                         }
 
                         System.out.println("Note off, " + noteName + octave + " key=" + key + " velocity: " + velocity);
@@ -124,8 +172,11 @@ public class MidiFileParser {
 
             System.out.println();
         }
+
+        return new Staff(fileTempo, timeSignature, voices);
     }
 
+    // Might be unused
     private double calculateTickSize(float divisionType, float resolution) {
         double tickSize;
 
@@ -140,7 +191,7 @@ public class MidiFileParser {
                             : (divisionType == Sequence.SMPTE_30 ? 30
                             : (divisionType == Sequence.SMPTE_30DROP ?
 
-                            29.97: -1))));
+                            29.97 : -1))));
             double ticksPerSecond = resolution * framesPerSecond;
             tickSize = 1.0 / ticksPerSecond;
         }
@@ -170,6 +221,8 @@ public class MidiFileParser {
             int thirtySecondNotesPerBeat = hexBytes[3];
 
             System.out.println("Time signature: " + numerator + "/" + denominator);
+            // update time signature
+            timeSignature = new TimeSignature(numerator, TimeSignature.DenominatorChoices.getByInt(hexBytes[1]));
         } else if (message.getType() == KEY_SIGNATURE) {
             boolean major = hexBytes[1] == 0;
             boolean sharps = hexBytes[0] > 0;
@@ -224,18 +277,47 @@ public class MidiFileParser {
         return toReturn;
     }
 
+    private double roundDoubleToCleanFraction(double d) {
+        // Based on max sixty fourth second resolution
+        double[] acceptableFractionsOfQuarterNote = {
+                0.5, // eighth
+                0.25, // sixteenth
+                0.125, // thirty-second
+                0.0625 // sixty-fourth
+        };
+
+        double minDistance = Double.MAX_VALUE;
+
+        for (int i = 0; i < acceptableFractionsOfQuarterNote.length; i++) {
+            double distance = Math.abs(d - acceptableFractionsOfQuarterNote[i]);
+            if (distance < minDistance) {
+                minDistance = distance;
+            } else {
+                // found our closest match
+                return acceptableFractionsOfQuarterNote[i - 1];
+            }
+        }
+
+        return 0.0625;
+    }
+
     /**
-     * Container for a Note, and when it started playing.
+     * Container for note timing information in MIDI.
      * <p>
      * For use in calculating approximate note value based on ms and tempo.
      */
     private class MidiNoteTuple {
-        public final Note note;
         public final long startTime;
+        public final int index;
 
-        public MidiNoteTuple(Note note, long startTime) {
-            this.note = note;
+        public MidiNoteTuple(long startTime, int index) {
             this.startTime = startTime;
+            this.index = index;
+        }
+
+        @Override
+        public String toString() {
+            return "Start time: " + startTime + ", index: " + index;
         }
     }
 }

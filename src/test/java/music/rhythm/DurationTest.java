@@ -38,9 +38,17 @@ public class DurationTest {
     }
 
     @Test
-    public void testRatio() {
+    public void testRatioGetter() {
         assertTrue(0.5 == quarter.getDurationRatio(half));
         assertTrue(2 == half.getDurationRatio(quarter));
         assertTrue(4 == whole.getDurationRatio(quarter));
+    }
+
+    @Test
+    public void testDurationByRatio() {
+        assertEquals(eighth, Duration.getDurationByRatio(quarter, 0.5));
+        assertEquals(eighth, Duration.getDurationByRatio(half, 0.25));
+        assertEquals(half, Duration.getDurationByRatio(quarter, 2.0));
+        assertEquals(eighth, Duration.getDurationByRatio(whole, 0.125));
     }
 }

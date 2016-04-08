@@ -2,6 +2,7 @@ package music.pitch;
 
 import music.pitch.interval.Interval;
 import music.pitch.interval.IntervalUtils;
+import music.rhythm.Duration;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,7 +13,7 @@ import java.util.stream.Collectors;
  * A Chord is just a collection of Note objects.
  * @author Reed
  */
-public class Chord {
+public class Chord implements BasicNote {
     public final ArrayList<Note> chord = new ArrayList<Note>();
 
     /**
@@ -33,6 +34,18 @@ public class Chord {
 
         for (Interval i: intervalsAbove) {
             chord.add(IntervalUtils.getNoteAbove(base, i));
+        }
+    }
+
+    /**
+     * Create a Chord by supplying a chord string of format [Notestring]-[Notestring]...
+     * @param chordString The chord string to provide
+     */
+    public Chord(String chordString) {
+        String[] noteStrings = chordString.split("-");
+
+        for (String s: noteStrings) {
+            chord.add(new Note(s));
         }
     }
 
@@ -59,5 +72,15 @@ public class Chord {
     @Override
     public int hashCode() {
         return chord.hashCode();
+    }
+
+    @Override
+    public String toNoteString() {
+        return toString();
+    }
+
+    @Override
+    public Duration getDuration() {
+        return chord.get(0).getDuration();
     }
 }

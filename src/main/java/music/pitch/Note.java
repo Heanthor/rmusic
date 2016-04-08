@@ -257,6 +257,11 @@ public class Note implements BasicNote, Comparable<Note> {
     }
 
     @Override
+    public int hashCode() {
+        return this.pitchValue + duration.hashCode();
+    }
+
+    @Override
     public Duration getDuration() {
         return duration;
     }
