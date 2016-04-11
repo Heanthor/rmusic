@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
  */
 public class Chord implements BasicNote {
     public final ArrayList<Note> chord = new ArrayList<Note>();
+    private int index = -1;
 
     /**
      * Create a Chord with the given Notes
@@ -82,5 +83,22 @@ public class Chord implements BasicNote {
     @Override
     public Duration getDuration() {
         return chord.get(0).getDuration();
+    }
+
+    @Override
+    public void setDuration(Duration d) {
+        for (BasicNote n: chord) {
+            n.setDuration(d);
+        }
+    }
+
+    @Override
+    public int getIndex() {
+        return index;
+    }
+
+    @Override
+    public boolean equalsIndex(BasicNote b) {
+        return this.index == b.getIndex() && this.equals(b);
     }
 }

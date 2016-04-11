@@ -72,6 +72,13 @@ public class MidiFileParser {
         ArrayList<Voice> voices = new ArrayList<>();
         // add primary voice
         voices.add(new Voice(new ArrayList<>()));
+        int noteOnIndex = 0;
+        int lastVoicePlayed = 0;
+
+        // keep track of how many beats each voice holds
+        // the array index corredsponds to the array index in voices
+        ArrayList<Double> beatsPerVoice = new ArrayList<>();
+        beatsPerVoice.add(0.0);
 
         // loops chunks
         for (Track track : sequence.getTracks()) {
@@ -101,7 +108,56 @@ public class MidiFileParser {
                         // This note is currently playing, push to stack
                         // Give note a temporary quarter note time, this will change
                         String noteString = noteName + octave + ":Q";
-                        soundingNotes.put(new Note(noteString), new MidiNoteTuple(tickTime, i));
+                        Note temp = new Note(noteString);
+
+                        // Push note with dummy duration to voice arrays, to lock in its position
+                        // notes are added to available voices as needed, or a new voice is added
+                        int voiceToPlayIndex = soundingNotes.size();
+
+                        if (voices.size() <= voiceToPlayIndex) {
+                            // Allocate a new voice
+                            Voice v = new Voice(new ArrayList<>(), voices.size());
+                            // Fill rests up to the current duration
+
+                            // match the rest's duration to adjacent durations
+                            Duration[] sum = Duration.generateMultipleDurations(beatsPerVoice.get(0));
+                            for (Duration d: sum) {
+                                v.addNote(new Rest(d));
+                            }
+
+                            // add note that created new voice
+                            v.addNote(temp);
+                            // store the duration this voice now holds
+                            beatsPerVoice.add(temp.getDuration().getDoubleValue());
+                            // and add the voice
+                            voices.add(v);
+                            lastVoicePlayed = voiceToPlayIndex;
+                        } else {
+                            // Give the lowest voice the note
+                            Voice thisVoice = voices.get(voiceToPlayIndex);
+
+                            if (voiceToPlayIndex != lastVoicePlayed) {
+                                // Keeping track of how many beats we are into the file,
+                                // catch this voice up with a corresponding number of rests from its last note
+                                double thisVoiceBeatValue = beatsPerVoice.get(voiceToPlayIndex);
+                                double differenceFromMax = Collections.max(beatsPerVoice) - thisVoiceBeatValue;
+
+                                // Catch voice up
+                                if (differenceFromMax != 0.0) {
+                                    Duration[] restDurations = Duration.generateMultipleDurations(differenceFromMax);
+
+                                    for (Duration d : restDurations) {
+                                        thisVoice.addNote(new Rest(d));
+                                    }
+                                }
+                            }
+
+                            // then add note
+                            thisVoice.addNote(temp);
+                            lastVoicePlayed = voiceToPlayIndex;
+                        }
+
+                        soundingNotes.put(temp, new MidiNoteTuple(tickTime, noteOnIndex++));
 
                         System.out.println("Note on, " + noteName + octave + " key=" + key + " velocity: " + velocity);
                     } else if (sm.getCommand() == ShortMessage.NOTE_OFF) {
@@ -122,36 +178,25 @@ public class MidiFileParser {
                         long noteTicks = tickTime - mnp.startTime;
                         double fractionOfQuarterNote = roundDoubleToCleanFraction(noteTicks / resolution);
                         Duration approxDuration = Duration.getDurationByRatio(new Duration("Q"), fractionOfQuarterNote);
-                        temp.setDuration(approxDuration);
 
-                        // Have all info about note, calculate voicing
+                        // Have all info about note, calculate timing
+                        boolean done = false;
+                        for (int k = 0; k < voices.size(); k++) {
+                            Voice v = voices.get(k);
 
-                        // primary voice is playing a note, so another voice must play this one
-                        // notes are added to available voices as needed, or a new voice is added
-                        int voiceToPlayIndex = soundingNotes.size();
+                            if (!done) {
+                                for (int j = v.size() - 1; j >= 0; j--) {
+                                    // Find (best guess) temporary note corresponding to this one
+                                    BasicNote temp2 = v.getNote(j);
+                                    if (temp2.equals(temp)) {
+                                        temp2.setDuration(approxDuration);
+                                        done = true;
 
-                        if (voices.size() <= voiceToPlayIndex) {
-                            // Allocate a new voice
-                            Voice v = new Voice(new ArrayList<>(), voices.size());
-                            // Fill rests up to the current duration
-                            int numNotes = voices.get(0).size();
-
-                            for (int j = 0; j < numNotes; j++) {
-                                v.addNote(new Rest(approxDuration));
-                            }
-                            v.addNote(temp);
-                            voices.add(v);
-                        } else {
-                            // Give the lowest voice the note
-                            voices.get(voiceToPlayIndex).addNote(temp);
-                        }
-
-                        // Give every other voice a rest of the same duration to keep in sync
-                        Rest r = new Rest(approxDuration);
-                        for (int j = 0; j < voices.size(); j++) {
-                            if (j != voiceToPlayIndex) {
-                                Voice v = voices.get(j);
-                                v.addNote(r);
+                                        // save duration info
+                                        beatsPerVoice.set(k, beatsPerVoice.get(k) + approxDuration.getDoubleValue());
+                                        break;
+                                    }
+                                }
                             }
                         }
 

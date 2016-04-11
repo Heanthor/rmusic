@@ -26,15 +26,24 @@ public class DurationTest {
 
     @Test
     public void testAddDurations() {
-        Duration result = Duration.addDurations(quarter, half);
+        Duration result = Duration.addDurations(quarter, half)[0];
 
         assertEquals(dottedHalf, result);
 
-        result = Duration.addDurations(eighth, eighth, eighth);
+        result = Duration.addDurations(eighth, eighth, eighth)[0];
 
         assertEquals(dottedQuarter, result);
 
-        assertEquals(whole, Duration.addDurations(quarter, quarter, half));
+        assertEquals(whole, Duration.addDurations(quarter, quarter, half)[0]);
+
+        Duration[] resultList = Duration.addDurations(whole, half, quarter);
+
+        double sum = 0.0;
+        for (Duration d: resultList) {
+            sum += d.getDoubleValue();
+        }
+
+        assertTrue(1.75 == sum);
     }
 
     @Test

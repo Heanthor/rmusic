@@ -16,6 +16,7 @@ public class Note implements BasicNote, Comparable<Note> {
     public final NoteValue basePitch;
     public final NoteValue.Accidental accidental;
     public final Octave octave;
+    private int index = -1;
 
     private Duration duration;
 
@@ -40,6 +41,20 @@ public class Note implements BasicNote, Comparable<Note> {
 
     /**
      * Create a note object, representing a specific pitch on a keyboard.
+     *
+     * @param basePitch  The base pitch, A-G
+     * @param accidental Any accidental on the pitch
+     * @param o          The octave it exists in, in scientific pitch notation
+     * @param d          The duration of the note
+     * @param index      The midi index
+     */
+    public Note(NoteValue basePitch, NoteValue.Accidental accidental, Octave o, Duration d, int index) {
+        this(basePitch, accidental, o, d);
+        this.index = index;
+    }
+
+    /**
+     * Create a note object, representing a specific pitch on a keyboard.
      * Its duration is set to quarter note.
      *
      * @param basePitch  The base pitch, A-G
@@ -55,6 +70,20 @@ public class Note implements BasicNote, Comparable<Note> {
     }
 
     /**
+     * Create a note object, representing a specific pitch on a keyboard.
+     * Its duration is set to quarter note.
+     *
+     * @param basePitch  The base pitch, A-G
+     * @param accidental Any accidental on the pitch
+     * @param o          The octave it exists in, in scientific pitch notation
+     * @param index      The midi index
+     */
+    public Note(NoteValue basePitch, NoteValue.Accidental accidental, Octave o, int index) {
+        this(basePitch, accidental, o);
+        this.index = index;
+    }
+
+    /**
      * Create a note object, representing a specific pitch, without octave specification.
      * Its duration is set to quarter note.
      *
@@ -67,6 +96,19 @@ public class Note implements BasicNote, Comparable<Note> {
         this.pitchValue = Pitch.getPitchValue(basePitch, accidental);
         this.octave = Octave.FOUR;
         this.duration = new Duration(Duration.DurationValue.QUARTER, false);
+    }
+
+    /**
+     * Create a note object, representing a specific pitch, without octave specification.
+     * Its duration is set to quarter note.
+     *
+     * @param basePitch  The base pitch, A-G
+     * @param accidental Any accidental on the pitch
+     * @param index      The midi index
+     */
+    public Note(NoteValue basePitch, NoteValue.Accidental accidental, int index) {
+        this(basePitch, accidental);
+        this.index = index;
     }
 
     /**
@@ -135,6 +177,18 @@ public class Note implements BasicNote, Comparable<Note> {
         this.octave = oct;
         this.pitchValue = Pitch.getPitchValue(nv, mod);
         this.duration = Duration.parseDurationString(duration);
+    }
+
+    /**
+     * Parses a note string and creates its Note object representation.
+     * Format: [Base note (uppercase)][Optional: # or b][Octave number]:[Duration string]
+     *
+     * @param noteString Note representation string
+     * @param index      The midi index
+     */
+    public Note(String noteString, int index) {
+        this(noteString);
+        this.index = index;
     }
 
     /**
@@ -227,7 +281,7 @@ public class Note implements BasicNote, Comparable<Note> {
 
         // Enharmonic notes are equal pitch even though notated differently
         // Special case for wrapping around B# and C, or Cb and B
-        return     this.pitchValue == 13 && n.pitchValue == 1
+        return this.pitchValue == 13 && n.pitchValue == 1
                 || this.pitchValue == 1 && n.pitchValue == 13
                 || this.pitchValue == 0 && n.pitchValue == 12
                 || this.pitchValue == 12 && n.pitchValue == 0
@@ -258,6 +312,7 @@ public class Note implements BasicNote, Comparable<Note> {
 
     @Override
     public int hashCode() {
+        // purposefully doesn't include index
         return this.pitchValue + duration.hashCode();
     }
 
@@ -269,9 +324,20 @@ public class Note implements BasicNote, Comparable<Note> {
     /**
      * Set this note's Duration to the given duration.
      * Useful if this Note is partially constructed.
+     *
      * @param d The duration to set.
      */
     public void setDuration(Duration d) {
         this.duration = d;
+    }
+
+    @Override
+    public int getIndex() {
+        return index;
+    }
+
+    @Override
+    public boolean equalsIndex(BasicNote b) {
+        return this.index == b.getIndex() && this.equals(b);
     }
 }

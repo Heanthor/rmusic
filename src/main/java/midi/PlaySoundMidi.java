@@ -70,6 +70,7 @@ public class PlaySoundMidi {
 //        }).start();
         try {
             Staff furElise = parser.loadAndParseFile(new File("bin/midifiles/for_elise_by_beethoven.mid"));
+            //Staff tchaikovskyVC1 = parser.loadAndParseFile(new File("bin/midifiles/tchop35a.mid"));
             System.out.println(furElise);
             m.playStaff(furElise);
         } catch (InvalidMidiDataException | IOException e) {

@@ -84,6 +84,18 @@ public class Voice {
     }
 
     /**
+     * Replaces the element at the given index with the given BasicNote.
+     * @param n The note to replace with.
+     * @param index The index to replace.
+     * @return The current object
+     */
+    public Voice addNote(Note n, int index) {
+        melody.set(index, n);
+
+        return this;
+    }
+
+    /**
      * Get the number of notes in this Voice
      * @return The number of notes.
      */
@@ -98,5 +110,14 @@ public class Voice {
      */
     public int getIndex() {
         return index;
+    }
+
+    /**
+     * Get the Note that is at a given index in this voice.
+     * @param index The index to retrieve from
+     * @return The present note.
+     */
+    public BasicNote getNote(int index) {
+        return melody.get(index);
     }
 }

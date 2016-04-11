@@ -5,6 +5,7 @@ import com.google.common.collect.HashBiMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.IllegalFormatException;
+import java.util.stream.Collectors;
 
 /**
  * Class representing an amount of time a note should sound for.
@@ -121,6 +122,7 @@ public class Duration {
         /**
          * Gets the fraction representation of a double.
          * Returns in simplest form.
+         *
          * @param d The double to evaluate.
          * @return A fraction best matching this double.
          */
@@ -164,8 +166,8 @@ public class Duration {
     }
 
     // Allow mapping of custom strings to enum DurationValue enum
-    public static final ArrayList<String> strRepresentations = new ArrayList<String>();
-    public static final ArrayList<String> enumNames = new ArrayList<String>();
+    public static final ArrayList<String> strRepresentations = new ArrayList<>();
+    public static final ArrayList<String> enumNames = new ArrayList<>();
 
     private DurationValue value;
     private boolean dot;
@@ -217,6 +219,20 @@ public class Duration {
      */
     public Duration(String durationString) {
         Duration temp = Duration.parseDurationString(durationString);
+
+        this.value = temp.value;
+        this.dot = temp.dot;
+        this.durationValue = temp.durationValue;
+    }
+
+    /**
+     * Create a new Duration with the given decimal value.
+     * This will fail if the decimal value is not a clean fraction
+     * able to be made into a duration.
+     * @param durationDecimal The duration decimal
+     */
+    public Duration(double durationDecimal) {
+        Duration temp = fractionToDuration(new Fraction(durationDecimal));
 
         this.value = temp.value;
         this.dot = temp.dot;
@@ -278,16 +294,56 @@ public class Duration {
      * Sums multiple durations to return the larger duration.
      *
      * @param in Multiple Durations to be summed
-     * @return A new Duration representing the combined values of all Durations passed in.
+     * @return A new Duration[] representing the combined values of all Durations passed in.
      */
-    public static Duration addDurations(Duration... in) {
+    public static Duration[] addDurations(Duration... in) {
         Fraction total = in[0].durationValue;
+        ArrayList<Duration> toReturn = new ArrayList<>();
 
         for (int i = 1; i < in.length; i++) {
             total = total.add(in[i].durationValue);
         }
+        double temp = total.getDoubleValue();
+        ArrayList<Double> parts = new ArrayList<>();
 
-        return fractionToDuration(total);
+        if (temp > 1.0) {
+            while (temp != 0) {
+                double t2 = temp > 1.0 ? 1.0 : temp;
+                parts.add(t2);
+                temp -= t2;
+            }
+        } else {
+            parts.add(temp);
+        }
+
+
+        toReturn.addAll(parts.stream().map(Duration::new).collect(Collectors.toList()));
+
+        Duration[] d = new Duration[toReturn.size()];
+
+        return toReturn.toArray(d);
+    }
+
+    /**
+     * Generate Durations (maximum size whole note) out of the given double value.
+     * Doubel value must divide nicely into durations.
+     * @param value Value to break into Durations
+     * @return The generated Durations
+     */
+    public static Duration[] generateMultipleDurations(double value) {
+        ArrayList<Duration> parts = new ArrayList<>();
+
+        if (value > 1.0) {
+            while (value != 0) {
+                double t2 = value > 1.0 ? 1.0 : value;
+                parts.add(new Duration(t2));
+                value -= t2;
+            }
+        } else {
+            parts.add(new Duration(value));
+        }
+
+        return parts.toArray(new Duration[parts.size()]);
     }
 
     /**
@@ -323,11 +379,20 @@ public class Duration {
      * Get the code for this Duration, E.g.
      * Quarter -> Q
      * Dotted eighth -> Ed
+     *
      * @return The duration code for this Duration
      */
     public String getDurationCode() {
         int enumName = Duration.enumNames.indexOf(value.name());
         return strRepresentations.get(enumName) + (dot ? "d" : "");
+    }
+
+    /**
+     * Get this Duration's value as a double.
+     * @return The double representation of this duration.
+     */
+    public double getDoubleValue() {
+        return durationValue.getDoubleValue();
     }
 
     @Override
