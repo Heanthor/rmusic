@@ -113,7 +113,7 @@ public class Note implements BasicNote, Comparable<Note> {
 
     /**
      * Parses a note string and creates its Note object representation.
-     * Format: [Base note (uppercase)][Optional: # or b][Octave number]:[Duration string]
+     * Format: [Base note][Optional: # or b][Octave number]:[Optional: Duration string]
      *
      * @param noteStringIn Note representation string
      */
@@ -121,16 +121,21 @@ public class Note implements BasicNote, Comparable<Note> {
         NoteValue nv;
         NoteValue.Accidental mod;
         Octave oct;
+        Duration dur;
+        String noteString;
 
         if (noteStringIn.indexOf(':') == -1) {
-            throw new IllegalArgumentException("Note string format incorrect (Missing ':' divider).");
+            // has no duration value
+            dur = new Duration(Duration.DurationValue.QUARTER, false);
+            noteString = noteStringIn;
+        } else {
+            // has a duration value
+            dur = Duration.parseDurationString(noteStringIn.substring(noteStringIn.indexOf(':') + 1));
+            noteString = noteStringIn.substring(0, noteStringIn.indexOf(':'));
         }
 
-        String noteString = noteStringIn.substring(0, noteStringIn.indexOf(':'));
-        String duration = noteStringIn.substring(noteStringIn.indexOf(':') + 1);
-
         try {
-            nv = NoteValue.valueOf("" + noteString.charAt(0));
+            nv = NoteValue.valueOf(("" + noteString.charAt(0)).toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Note string format incorrect (Note name not found in first position).");
         }
@@ -176,7 +181,7 @@ public class Note implements BasicNote, Comparable<Note> {
         this.accidental = mod;
         this.octave = oct;
         this.pitchValue = Pitch.getPitchValue(nv, mod);
-        this.duration = Duration.parseDurationString(duration);
+        this.duration = dur;
     }
 
     /**

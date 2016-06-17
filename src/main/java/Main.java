@@ -15,8 +15,8 @@ public class Main {
     }
 
     private void inputLoop() {
-        System.out.print("Give me a base note.");
-        System.out.println("Form: [Base note (uppercase)][Optional: # or b][Octave number]:[Duration string].");
+        System.out.print("Give me a base note. ");
+        System.out.println("Form: [Base note][Optional: # or b][Octave number]:[Optional: Duration string].");
         System.out.println("Duration string choices: \"W\", \"H\", \"Q\", \"E\", \"S\", \"T\", or \"X\"");
 
         while (true) {

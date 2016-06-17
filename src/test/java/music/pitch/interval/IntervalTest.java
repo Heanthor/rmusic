@@ -38,6 +38,8 @@ public class IntervalTest {
         assertEquals(NoteBank.g3, IntervalUtils.getNoteBelow(NoteBank.c4, PerfectIntervals.PERFECT_FOURTH));
 
         assertEquals(new Note("A3:Q"), IntervalUtils.getNoteBelow(NoteBank.c4, MinorIntervals._3rd));
+
+        assertEquals(new Note("F4:Q"), IntervalUtils.getNoteBelow(new Note("Ab4:Q"), MinorIntervals._3rd));
     }
 
     @Test

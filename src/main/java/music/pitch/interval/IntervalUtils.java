@@ -162,7 +162,7 @@ public class IntervalUtils {
                 break;
             case "third":
             case "3rd":
-                toReturn = major ? MajorIntervals._3rd : MinorIntervals._2nd;
+                toReturn = major ? MajorIntervals._3rd : MinorIntervals._3rd;
                 break;
             case "sixth":
             case "6th":
