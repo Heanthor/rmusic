@@ -50,6 +50,20 @@ public class TimeSignature {
         update(numerator, denominator);
     }
 
+    public TimeSignature(String ts) {
+        if (ts.toUpperCase().equals("C")) {
+            this.numerator = 4;
+            this.denominator = 4;
+        } else {
+            try {
+                this.numerator = Integer.parseInt(ts.substring(0, ts.indexOf("/")));
+                this.denominator = Integer.parseInt(ts.substring(ts.indexOf("/") + 1, ts.length()));
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid time signature format - must be <numerator>/<denominator>.");
+            }
+        }
+    }
+
     public int getNumerator() {
         return numerator;
     }
@@ -66,5 +80,22 @@ public class TimeSignature {
     public void update(int numerator, DenominatorChoices denominator) {
         this.numerator = numerator;
         this.denominator = denominator.getValue();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        TimeSignature that = (TimeSignature) o;
+
+        return numerator == that.numerator && denominator == that.denominator;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = numerator;
+        result = 31 * result + denominator;
+        return result;
     }
 }

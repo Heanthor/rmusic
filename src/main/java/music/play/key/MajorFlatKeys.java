@@ -6,14 +6,14 @@ import music.pitch.Note;
  * @author reedt
  */
 public enum MajorFlatKeys implements Key {
-    C(new Note("C4:Q")),
-    F(new Note("F4:Q")),
-    Bb(new Note("Bb4:Q")),
-    Eb(new Note("Eb4:Q")),
-    Ab(new Note("Ab4:Q")),
-    Db(new Note("Db4:Q")),
-    Gb(new Note("Gb4:Q")),
-    Cb(new Note("Cb4:Q"));
+    C(new Note("C4")),
+    F(new Note("F4")),
+    Bb(new Note("Bb4")),
+    Eb(new Note("Eb4")),
+    Ab(new Note("Ab4")),
+    Db(new Note("Db4")),
+    Gb(new Note("Gb4")),
+    Cb(new Note("Cb4"));
 
 
     private Note noteRepr;

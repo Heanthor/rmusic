@@ -87,7 +87,7 @@ public class KeySignature {
             }
 
             // Starting sharp
-            Note tmp = new Note("F4:Q");
+            Note tmp = new Note("F4");
 
             // Populate key signature list
             for (int i = 0; i < numAccidentals; i++) {
@@ -123,7 +123,7 @@ public class KeySignature {
             }
 
             // Starting flat
-            Note tmp = new Note("B4:Q");
+            Note tmp = new Note("B4");
 
             // Populate key signature list
             for (int i = 0; i < numAccidentals; i++) {
@@ -147,7 +147,7 @@ public class KeySignature {
         List<Note> sig = new ArrayList<>();
         if (sharps) {
             // Starting sharp
-            Note tmp = new Note("F4:Q");
+            Note tmp = new Note("F4");
 
             // Populate key signature list
             for (int i = 0; i < numAccidentals; i++) {
@@ -160,7 +160,7 @@ public class KeySignature {
             return sig;
         } else {
             // Starting flat
-            Note tmp = new Note("B4:Q");
+            Note tmp = new Note("B4");
 
             // Populate key signature list
             for (int i = 0; i < numAccidentals; i++) {

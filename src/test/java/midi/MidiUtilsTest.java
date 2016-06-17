@@ -16,10 +16,10 @@ public class MidiUtilsTest {
     public void getMidiNoteTest() throws Exception {
         assertEquals(60, MidiUtils.getMidiNote(NoteBank.c4));
         assertEquals(61, MidiUtils.getMidiNote(NoteBank.cs4));
-        assertEquals(84, MidiUtils.getMidiNote(new Note("B#5:Q")));
-        assertEquals(24, MidiUtils.getMidiNote(new Note("Cb4:Q")));
+        assertEquals(84, MidiUtils.getMidiNote(new Note("B#5")));
+        assertEquals(24, MidiUtils.getMidiNote(new Note("Cb4")));
 
-        assertEquals(66, MidiUtils.getMidiNote(new Note("Gb4:Q")));
+        assertEquals(66, MidiUtils.getMidiNote(new Note("Gb4")));
     }
 
     @Test

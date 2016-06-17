@@ -118,9 +118,9 @@ public class IntervalUtils {
             case "minor":
                 return parseMajorMinorIntervals(interval, false);
             case "diminished":
-                return parseDimishedAugmentedIntervals(interval, true);
+                return parseDiminishedAugmentedIntervals(interval, true);
             case "augmented":
-                return parseDimishedAugmentedIntervals(interval, false);
+                return parseDiminishedAugmentedIntervals(interval, false);
             default:
                 throw new IllegalArgumentException("Invalid interval string (invalid interval type '" + intervalType + "').");
         }
@@ -179,7 +179,7 @@ public class IntervalUtils {
         return toReturn;
     }
 
-    private static Interval parseDimishedAugmentedIntervals(String intervalString, boolean diminished) {
+    private static Interval parseDiminishedAugmentedIntervals(String intervalString, boolean diminished) {
         Interval toReturn;
 
         switch (intervalString) {

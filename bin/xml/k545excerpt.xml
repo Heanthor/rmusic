@@ -1,0 +1,87 @@
+<!--Example song -->
+<Song>
+    <Title>Mozart K545</Title>
+    <Tempo>120</Tempo>
+    <Key>C major</Key>
+    <TimeSignature>4/4</TimeSignature>
+
+    <Notes>
+        <Note>
+            <Pitch>C5</Pitch>
+            <Duration>H</Duration>
+        </Note>
+        <Note>
+            <Pitch>E5</Pitch>
+            <Duration>Q</Duration>
+        </Note>
+        <Note>
+            <Pitch>G5</Pitch>
+            <Duration>Q</Duration>
+        </Note>
+        <Note>
+            <Pitch>B4</Pitch>
+            <Duration>Qd</Duration>
+        </Note>
+        <Note>
+            <Pitch>C5</Pitch>
+            <Duration>S</Duration>
+        </Note>
+        <Note>
+            <Pitch>D5</Pitch>
+            <Duration>S</Duration>
+        </Note>
+        <Note>
+            <Pitch>C5</Pitch>
+            <Duration>Q</Duration>
+        </Note>
+        <Note>
+            <Pitch>R</Pitch>
+            <Duration>Q</Duration>
+        </Note>
+
+        <Note>
+            <Pitch>A5</Pitch>
+            <Duration>H</Duration>
+        </Note>
+        <Note>
+            <Pitch>G5</Pitch>
+            <Duration>Q</Duration>
+        </Note>
+        <Note>
+            <Pitch>C6</Pitch>
+            <Duration>Q</Duration>
+        </Note>
+        <Note>
+            <Pitch>G5</Pitch>
+            <Duration>Q</Duration>
+        </Note>
+        <Note>
+            <Pitch>F5</Pitch>
+            <Duration>T</Duration>
+        </Note>
+        <Note>
+            <Pitch>G5</Pitch>
+            <Duration>T</Duration>
+        </Note>
+        <Note>
+            <Pitch>F5</Pitch>
+            <Duration>T</Duration>
+        </Note>
+        <Note>
+            <Pitch>G5</Pitch>
+            <Duration>T</Duration>
+        </Note>
+        <Note>
+            <Pitch>E5</Pitch>
+            <Duration>T</Duration>
+        </Note>
+        <Note>
+            <Pitch>F5</Pitch>
+            <Duration>T</Duration>
+        </Note>
+        <Note>
+            <Pitch>E5</Pitch>
+            <Duration>H</Duration>
+        </Note>
+    </Notes>
+</Song>

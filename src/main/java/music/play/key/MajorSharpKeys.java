@@ -6,14 +6,14 @@ import music.pitch.Note;
  * @author reedt
  */
 public enum MajorSharpKeys implements Key {
-    C(new Note("C4:Q")),
-    G(new Note("G4:Q")),
-    D(new Note("D4:Q")),
-    A(new Note("A4:Q")),
-    E(new Note("E4:Q")),
-    B(new Note("B4:Q")),
-    Fs(new Note("F#4:Q")),
-    Cs(new Note("C#4:Q"));
+    C(new Note("C4")),
+    G(new Note("G4")),
+    D(new Note("D4")),
+    A(new Note("A4")),
+    E(new Note("E4")),
+    B(new Note("B4")),
+    Fs(new Note("F#4")),
+    Cs(new Note("C#4"));
 
     private Note noteRepr;
 
