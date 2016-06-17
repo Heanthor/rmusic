@@ -69,7 +69,31 @@ public class Voice {
             sb.append(String.format("%-7s", b.toNoteString()).replace(' ', '.'));
         }
 
-        return "Voice " + index + ": " + sb.toString();
+        return trimEnd("Voice " + index + ": " + sb.toString(), '.');
+    }
+
+    /**
+     * Utility used to remove characters from the end of a string.
+     * @param toTrim String to trim
+     * @param ch Character to remove
+     * @return The string with all instances of ch removed from the tail.
+     */
+    private static String trimEnd(String toTrim, char ch) {
+        int goodLength = toTrim.length();
+
+        for (int i = toTrim.length() - 1; i > 0; i--) {
+            char c = toTrim.charAt(i);
+
+            if (c == ch) {
+                // knock off a character
+                goodLength--;
+            } else {
+                // trimmed as much as possible
+                break;
+            }
+        }
+
+        return toTrim.substring(0, goodLength);
     }
 
     /**

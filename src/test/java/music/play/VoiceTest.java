@@ -14,10 +14,10 @@ public class VoiceTest {
 
         Voice v = new Voice(voiceString);
 
-        assertEquals("Voice: A4:Q, B4:Q, R:Q, C4:W", v.toString());
+        assertEquals("Voice 0: A4:Q...B4:Q...R:Q....C4:W", v.toString());
 
         voiceString = "A3:Qd,C4:H,E6:Hd";
 
-        assertEquals("Voice: A3:Qd, C4:H, E6:Hd", new Voice(voiceString).toString());
+        assertEquals("Voice 0: A3:Qd..C4:H...E6:Hd", new Voice(voiceString).toString());
     }
 }
