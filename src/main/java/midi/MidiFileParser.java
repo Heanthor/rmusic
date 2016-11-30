@@ -41,16 +41,31 @@ public class MidiFileParser {
      * Represents the current tempo of the parsed file. Defaults to quarter = 120bpm.
      */
     private Tempo fileTempo = new Tempo(120);
+
+    /**
+     * Time signature of the MIDI file. Defaults to 4/4.
+     */
     private TimeSignature timeSignature = new TimeSignature(4, TimeSignature.DenominatorChoices._4);
+    /**
+     * number of ticks per quarter note in ppq
+     */
+    private float resolution;
+    /**
+     * Note, time it started sounding.
+     */
+    private Map<Note, Long> soundingNotes;
+    /**
+     * Dynamically grow based on need for more voices
+     */
+    private ArrayList<Voice> voices;
 
-    public static void main(String[] args) throws Exception {
-        File furElise = new File("bin/midifiles/for_elise_by_beethoven.mid");
-        File tchaikovskyVC1 = new File("bin/midifiles/tchop35a.mid");
-        Staff f = new MidiFileParser().loadAndParseFile(furElise);
-
-        System.out.println(f.toString());
-    }
-
+    /**
+     * Parse a midi file into a Staff. Attempts to match event time intervals to the closest note value this program can model.
+     * @param f A File object representing a .midi file.
+     * @return A Staff representing the data in the midi file.
+     * @throws InvalidMidiDataException If the file provided is not a valid MIDI file.
+     * @throws IOException If a file reading error occurs.
+     */
     public Staff loadAndParseFile(File f) throws InvalidMidiDataException, IOException {
         Sequence sequence = MidiSystem.getSequence(f);
 
@@ -62,15 +77,14 @@ public class MidiFileParser {
             System.err.println("Can't parse this MIDI format into notes!");
             System.exit(-1);
         }
-        // number of ticks per quarter note in ppq
-        float resolution = sequence.getResolution();
+
+        resolution = sequence.getResolution();
 
         int trackNumber = 0;
-        // Note, start time
-        Map<Note, Long> soundingNotes = new HashMap<>();
+        soundingNotes = new HashMap<>();
 
-        // Dynamically grow based on need for more voices
-        ArrayList<Voice> voices = new ArrayList<>();
+
+        voices = new ArrayList<>();
         // add primary voice
         voices.add(new Voice(new ArrayList<>()));
 
@@ -93,45 +107,9 @@ public class MidiFileParser {
                     System.out.print("Channel: " + sm.getChannel() + " ");
 
                     if (sm.getCommand() == ShortMessage.NOTE_ON) {
-                        int key = sm.getData1();
-                        int octave = (key / 12) - 1;
-                        int note = key % 12;
-                        String noteName = NOTE_NAMES[note];
-                        int velocity = sm.getData2();
-
-                        // This note is currently playing, push to stack
-                        // Give note a temporary quarter note time, this will change
-                        String noteString = noteName + octave + ":N";
-                        Note temp = new Note(noteString);
-
-                        // Push note with dummy duration to voice arrays, to lock in its position
-                        // notes are added to available voices as needed, or a new voice is added
-                        int voiceToPlayIndex = soundingNotes.size();
-
-                        if (voices.size() <= voiceToPlayIndex) {
-                            // Allocate a new voice
-                            Voice v = new Voice(new ArrayList<>(), voices.size());
-                            // Fill rests up to the current duration
-                            catchUpVoices(voices.get(0), v);
-
-                            // add note that created new voice
-                            v.addNote(temp);
-
-                            // and add the voice
-                            voices.add(v);
-                        } else {
-                            // Give the lowest voice the note
-                            Voice v = voices.get(voiceToPlayIndex);
-
-                            // then add note
-                            v.addNote(temp);
-                        }
-
-                        soundingNotes.put(temp, tickTime);
-
-                        System.out.println("Note on, " + noteName + octave + " key=" + key + " velocity: " + velocity);
+                        processNoteOn(tickTime, sm);
                     } else if (sm.getCommand() == ShortMessage.NOTE_OFF) {
-                        processNoteOff(resolution, soundingNotes, voices, tickTime, sm);
+                        processNoteOff(tickTime, sm);
                     } else {
                         System.out.println("Command: " + sm.getCommand());
                     }
@@ -152,7 +130,47 @@ public class MidiFileParser {
         return new Staff(fileTempo, timeSignature, voices);
     }
 
-    private void processNoteOff(float resolution, Map<Note, Long> soundingNotes, ArrayList<Voice> voices, long tickTime, ShortMessage sm) {
+    private void processNoteOn(long tickTime, ShortMessage sm) {
+        int key = sm.getData1();
+        int octave = (key / 12) - 1;
+        int note = key % 12;
+        String noteName = NOTE_NAMES[note];
+        int velocity = sm.getData2();
+
+        // This note is currently playing, push to stack
+        // Give note a temporary quarter note time, this will change
+        String noteString = noteName + octave + ":N";
+        Note temp = new Note(noteString);
+
+        // Push note with dummy duration to voice arrays, to lock in its position
+        // notes are added to available voices as needed, or a new voice is added
+        int voiceToPlayIndex = soundingNotes.size();
+
+        if (voices.size() <= voiceToPlayIndex) {
+            // Allocate a new voice
+            Voice v = new Voice(new ArrayList<>(), voices.size());
+            // Fill rests up to the current duration
+            catchUpVoices(voices.get(0), v);
+
+            // add note that created new voice
+            v.addNote(temp);
+
+            // and add the voice
+            voices.add(v);
+        } else {
+            // Give the lowest voice the note
+            Voice v = voices.get(voiceToPlayIndex);
+
+            // then add note
+            v.addNote(temp);
+        }
+
+        soundingNotes.put(temp, tickTime);
+
+        System.out.println("Note on, " + noteName + octave + " key=" + key + " velocity: " + velocity);
+    }
+
+    private void processNoteOff(long eventTickTime, ShortMessage sm) {
         int key = sm.getData1();
         int octave = (key / 12) - 1;
         int note = key % 12;
@@ -167,7 +185,7 @@ public class MidiFileParser {
         // Remove it as well, since it is no longer sounding
         long startTime = soundingNotes.remove(temp);
 
-        long noteTicks = tickTime - startTime;
+        long noteTicks = eventTickTime - startTime;
         double fractionOfQuarterNote = roundDoubleToCleanFraction(noteTicks / resolution);
         Duration approxDuration = Duration.getDurationByRatio(new Duration("Q"), fractionOfQuarterNote);
 
@@ -191,7 +209,6 @@ public class MidiFileParser {
             }
         }
 
-
         // catch all voices up to voice 0
         for (Voice v : voices) {
             // if any sounding note's duration is not known, do not catch up voices
@@ -209,30 +226,7 @@ public class MidiFileParser {
             }
         }
 
-
         System.out.println("Note off, " + noteName + octave + " key=" + key + " velocity: " + velocity);
-    }
-
-    // Might be unused
-    private double calculateTickSize(float divisionType, float resolution) {
-        double tickSize;
-
-        if (divisionType == Sequence.PPQ) {
-            System.out.println("Division Type: PPQ");
-            double ticksPerSecond = resolution * (fileTempo.bpm / 60);
-            tickSize = 1.0 / ticksPerSecond;
-        } else {
-            double framesPerSecond =
-                    (divisionType == Sequence.SMPTE_24 ? 24
-                            : (divisionType == Sequence.SMPTE_25 ? 25
-                            : (divisionType == Sequence.SMPTE_30 ? 30
-                            : (divisionType == Sequence.SMPTE_30DROP ?
-
-                            29.97 : -1))));
-            double ticksPerSecond = resolution * framesPerSecond;
-            tickSize = 1.0 / ticksPerSecond;
-        }
-        return tickSize;
     }
 
     private void parseMetaMessage(MetaMessage message) {
@@ -284,10 +278,37 @@ public class MidiFileParser {
     }
 
     /**
+     * Calculates the length of a tick based on resolution read earlier in the file.
+     * @param divisionType The MIDI code representing the division type, either PPQ or SMPTE.
+     * @return The tick size, as fractions of a second.
+     */
+    private double calculateTickSize(float divisionType) {
+        double tickSize;
+
+        if (divisionType == Sequence.PPQ) {
+            System.out.println("Division Type: PPQ");
+            double ticksPerSecond = resolution * (fileTempo.bpm / 60);
+            tickSize = 1.0 / ticksPerSecond;
+        } else {
+            double framesPerSecond =
+                    (divisionType == Sequence.SMPTE_24 ? 24
+                            : (divisionType == Sequence.SMPTE_25 ? 25
+                            : (divisionType == Sequence.SMPTE_30 ? 30
+                            : (divisionType == Sequence.SMPTE_30DROP ?
+
+                            29.97 : -1))));
+            double ticksPerSecond = resolution * framesPerSecond;
+            tickSize = 1.0 / ticksPerSecond;
+        }
+
+        return tickSize;
+    }
+
+    /**
      * Catches the second voice up to the first voice in beats, by adding rests as necessary.
      * If the second voice is ahead of the first, this method does nothing.
      *
-     * @param ahead The first voice
+     * @param ahead  The first voice
      * @param behind The second voice
      */
     private void catchUpVoices(Voice ahead, Voice behind) {
@@ -306,24 +327,8 @@ public class MidiFileParser {
             behind.addNote(new Rest(d));
         }
     }
-//    private void catchUpVoices(Voice v0, Voice v1) {
-//        double v0Time = v0.getTotalDurationValue();
-//        double v1Time = v1.getTotalDurationValue();
-//
-//        if (v0Time == v1Time) {
-//            return;
-//        }
-//
-//        Voice behind = v1Time < v0Time ? v1 : v0;
-//
-//        double difference = Math.abs(v0Time - v1Time);
-//
-//        Duration[] rests = Duration.generateMultipleDurations(difference);
-//
-//        for (Duration d : rests) {
-//            behind.addNote(new Rest(d));
-//        }
-//    }
+
+    /* Helper methods for MIDI file parsing */
 
     private String decimalToString(int[] bytes) {
         String toReturn = "";
@@ -356,6 +361,18 @@ public class MidiFileParser {
         return toReturn;
     }
 
+    /**
+     * Rounds fractions up or down to clean intervals, as used in musical notation.
+     * These durations are:
+     * <ol>
+     *     <li>Eighth (0.5)</li>
+     *     <li>Sixteenth (0.25)</li>
+     *     <li>Thirty-second (0.125)</li>
+     *     <li>Sixty-fourth (0.0625)</li>
+     * </ol>
+     * @param d The floating point number to round
+     * @return The floating point fraction in the list closest to d.
+     */
     private double roundDoubleToCleanFraction(double d) {
         // Based on max sixty fourth second resolution
         double[] acceptableFractionsOfQuarterNote = {
@@ -377,9 +394,15 @@ public class MidiFileParser {
             }
         }
 
+        // The smallest resolution accepted falls through
         return 0.0625;
     }
 
+    /**
+     * Find the index of the max element in the given list.
+     * @param d List of doubles
+     * @return The index of the maximum element in the list, or -1 if the list is empty.
+     */
     private int findMaxElementIndex(List<Double> d) {
         double max = -1;
         int maxIndex = -1;
@@ -393,5 +416,14 @@ public class MidiFileParser {
         }
 
         return maxIndex;
+    }
+
+    public static void main(String[] args) throws Exception {
+        File furElise = new File("bin/midifiles/for_elise_by_beethoven.mid");
+        File tchaikovskyVC1 = new File("bin/midifiles/tchop35a.mid");
+        File test = new File("bin/midifiles/test.txt");
+        Staff f = new MidiFileParser().loadAndParseFile(furElise);
+
+        System.out.println(f.toString());
     }
 }
