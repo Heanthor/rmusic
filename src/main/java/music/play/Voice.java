@@ -104,13 +104,7 @@ public class Voice {
      * @return An array of Durations, in the largest possible units.
      */
     public Duration[] getTotalDuration() {
-        double sum = 0;
-
-        for (BasicNote b : melody) {
-            sum += b.getDuration().getDoubleValue();
-        }
-
-        return Duration.generateMultipleDurations(sum);
+        return Duration.generateMultipleDurations(getTotalDurationValue());
     }
 
     /**
@@ -119,12 +113,10 @@ public class Voice {
      * @return Their total duration, represented in beats.
      */
     public double getTotalDurationValue() {
-        Duration[] s = getTotalDuration();
-
         double sum = 0;
 
-        for (Duration d : s) {
-            sum += d.getDoubleValue();
+        for (BasicNote b : melody) {
+            sum += b.getDuration().getDoubleValue();
         }
 
         return sum;

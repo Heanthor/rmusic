@@ -191,10 +191,10 @@ public class MidiFileParser {
             }
         }
 
-        // if any sounding note's duration is not known, do not catch up voices
 
         // catch all voices up to voice 0
         for (Voice v : voices) {
+            // if any sounding note's duration is not known, do not catch up voices
             boolean unknown = false;
 
             for (BasicNote n : v.melody) {
@@ -284,23 +284,21 @@ public class MidiFileParser {
     }
 
     /**
-     * Makes the two voices have equal numbers of beats, adding rests to the voice with less beats.
-     * Modifies at most one parameter.
+     * Catches the second voice up to the first voice in beats, by adding rests as necessary.
+     * If the second voice is ahead of the first, this method does nothing.
      *
-     * @param v0 The first voice
-     * @param v1 The second voice
+     * @param ahead The first voice
+     * @param behind The second voice
      */
-    private void catchUpVoices(Voice v0, Voice v1) {
-        double v0Time = v0.getTotalDurationValue();
-        double v1Time = v1.getTotalDurationValue();
+    private void catchUpVoices(Voice ahead, Voice behind) {
+        double aheadTime = ahead.getTotalDurationValue();
+        double behindTIme = behind.getTotalDurationValue();
 
-        if (v0Time == v1Time) {
+        if (behindTIme >= aheadTime) {
             return;
         }
 
-        Voice behind = v1Time < v0Time ? v1 : v0;
-
-        double difference = Math.abs(v0Time - v1Time);
+        double difference = aheadTime - behindTIme;
 
         Duration[] rests = Duration.generateMultipleDurations(difference);
 
@@ -308,6 +306,24 @@ public class MidiFileParser {
             behind.addNote(new Rest(d));
         }
     }
+//    private void catchUpVoices(Voice v0, Voice v1) {
+//        double v0Time = v0.getTotalDurationValue();
+//        double v1Time = v1.getTotalDurationValue();
+//
+//        if (v0Time == v1Time) {
+//            return;
+//        }
+//
+//        Voice behind = v1Time < v0Time ? v1 : v0;
+//
+//        double difference = Math.abs(v0Time - v1Time);
+//
+//        Duration[] rests = Duration.generateMultipleDurations(difference);
+//
+//        for (Duration d : rests) {
+//            behind.addNote(new Rest(d));
+//        }
+//    }
 
     private String decimalToString(int[] bytes) {
         String toReturn = "";
