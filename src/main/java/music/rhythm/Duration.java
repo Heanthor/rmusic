@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
  * Class representing an amount of time a note should sound for.
  * Represents time as note values found in most music.
  * Currently supports common non-triplet note values, up to sixty-fourth notes.
+ * This class does support durations with value 0.
  */
 public class Duration {
     public enum DurationValue {
@@ -20,7 +21,8 @@ public class Duration {
         EIGHTH,
         SIXTEENTH,
         THIRTY_SECONDTH,
-        SIXTY_FOURTH
+        SIXTY_FOURTH,
+        NULL
     }
 
     /**
@@ -127,6 +129,10 @@ public class Duration {
          * @return A fraction best matching this double.
          */
         private Fraction doubleToFraction(double d) {
+            if (d == 0) {
+                return new Fraction(0, 1);
+            }
+
             // ktm5124 on StackOverflow
             String s = String.valueOf(d);
             int digitsDec = s.length() - 1 - s.indexOf('.');
@@ -170,15 +176,15 @@ public class Duration {
     public static final ArrayList<String> enumNames = new ArrayList<>();
 
     private DurationValue value;
-    private boolean dot;
+    private boolean dot; // kept for printing only
     private Fraction durationValue;
 
     private static final HashBiMap<DurationValue, Fraction> durationValues = HashBiMap.create();
 
     static {
-        strRepresentations.addAll(Arrays.asList("W", "H", "Q", "E", "S", "T", "X"));
+        strRepresentations.addAll(Arrays.asList("W", "H", "Q", "E", "S", "T", "X", "N"));
         enumNames.addAll(Arrays.asList("WHOLE", "HALF", "QUARTER", "EIGHTH", "SIXTEENTH",
-                "THIRTY_SECONDTH", "SIXTY_FOURTH"));
+                "THIRTY_SECONDTH", "SIXTY_FOURTH", "NULL"));
 
         // Convert enum into numeric duration value
         // Values are fractions of total beats in measure
@@ -189,6 +195,9 @@ public class Duration {
         durationValues.put(DurationValue.SIXTEENTH, new Fraction(1, 16));
         durationValues.put(DurationValue.THIRTY_SECONDTH, new Fraction(1, 32));
         durationValues.put(DurationValue.SIXTY_FOURTH, new Fraction(1, 64));
+
+        // the zero duration is useful as an intermediate value
+        durationValues.put(DurationValue.NULL, new Fraction(0, 1));
     }
 
     /**
@@ -301,8 +310,14 @@ public class Duration {
         ArrayList<Duration> toReturn = new ArrayList<>();
 
         for (int i = 1; i < in.length; i++) {
+            if (in[i] == null) {
+                // skip null Durations
+                continue;
+            }
+
             total = total.add(in[i].durationValue);
         }
+
         double temp = total.getDoubleValue();
         ArrayList<Double> parts = new ArrayList<>();
 
@@ -375,6 +390,14 @@ public class Duration {
         return fractionToDuration(newDurationRatio);
     }
 
+    public static double sumDurationArray(Duration... d) {
+        double sum = 0;
+        for (Duration x: d) {
+            sum += x.getDoubleValue();
+        }
+
+        return sum;
+    }
     /**
      * Get the code for this Duration, E.g.
      * Quarter -> Q
@@ -402,8 +425,8 @@ public class Duration {
 
         Duration duration = (Duration) o;
 
+        // value already has dot added in
         return durationValue.equals(duration.durationValue);
-
     }
 
     @Override

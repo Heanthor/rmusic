@@ -21,11 +21,11 @@ public class ChordTest {
     private Chord c2_1 = new Chord(NoteBank.a4, MinorIntervals._3rd);
 
     // Cmaj triad
-    private Chord cmaj = new Chord(NoteBank.c4, NoteBank.e, new Note("G4:Q"));
+    private Chord cmaj = new Chord(NoteBank.c4, NoteBank.e, new Note("G4"));
     private Chord cmaj_2 = new Chord(NoteBank.c4, MajorIntervals._3rd, PerfectIntervals.PERFECT_FIFTH);
 
     // Gm7
-    private Chord gmin7 = new Chord(NoteBank.g3, new Note("Bb3:Q"), new Note("D4:Q"), new Note("F4:Q"));
+    private Chord gmin7 = new Chord(NoteBank.g3, new Note("Bb3"), new Note("D4"), new Note("F4"));
     private Chord gmin7_2 = new Chord(NoteBank.g3, MinorIntervals._3rd, PerfectIntervals.PERFECT_FIFTH, MinorIntervals._7th);
 
     @Test

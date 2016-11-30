@@ -25,6 +25,13 @@ public class DurationTest {
     }
 
     @Test
+    public void testEquals() {
+        assertEquals(quarter, new Duration(0.25));
+
+        assertNotEquals(quarter, new Duration(Duration.DurationValue.QUARTER, true));
+    }
+
+    @Test
     public void testAddDurations() {
         Duration result = Duration.addDurations(quarter, half)[0];
 
@@ -36,14 +43,9 @@ public class DurationTest {
 
         assertEquals(whole, Duration.addDurations(quarter, quarter, half)[0]);
 
-        Duration[] resultList = Duration.addDurations(whole, half, quarter);
+        Duration[] resultList = Duration.addDurations(whole, half, null, quarter);
 
-        double sum = 0.0;
-        for (Duration d: resultList) {
-            sum += d.getDoubleValue();
-        }
-
-        assertTrue(1.75 == sum);
+        assertTrue(1.75 == Duration.sumDurationArray(resultList));
     }
 
     @Test

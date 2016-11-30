@@ -66,19 +66,12 @@ public class MidiFileParser {
         float resolution = sequence.getResolution();
 
         int trackNumber = 0;
-        Map<Note, MidiNoteTuple> soundingNotes = new HashMap<>();
+        Map<Note, Long> soundingNotes = new HashMap<>();
 
         // Dynamically grow based on need for more voices
         ArrayList<Voice> voices = new ArrayList<>();
         // add primary voice
         voices.add(new Voice(new ArrayList<>()));
-        int noteOnIndex = 0;
-        int lastVoicePlayed = 0;
-
-        // keep track of how many beats each voice holds
-        // the array index corredsponds to the array index in voices
-        ArrayList<Double> beatsPerVoice = new ArrayList<>();
-        beatsPerVoice.add(0.0);
 
         // loops chunks
         for (Track track : sequence.getTracks()) {
@@ -107,7 +100,7 @@ public class MidiFileParser {
 
                         // This note is currently playing, push to stack
                         // Give note a temporary quarter note time, this will change
-                        String noteString = noteName + octave + ":Q";
+                        String noteString = noteName + octave + ":N";
                         Note temp = new Note(noteString);
 
                         // Push note with dummy duration to voice arrays, to lock in its position
@@ -118,46 +111,22 @@ public class MidiFileParser {
                             // Allocate a new voice
                             Voice v = new Voice(new ArrayList<>(), voices.size());
                             // Fill rests up to the current duration
-
-                            // match the rest's duration to adjacent durations
-                            Duration[] sum = Duration.generateMultipleDurations(beatsPerVoice.get(0));
-                            for (Duration d: sum) {
-                                v.addNote(new Rest(d));
-                            }
+                            catchUpVoices(voices.get(0), v);
 
                             // add note that created new voice
                             v.addNote(temp);
-                            // store the duration this voice now holds
-                            beatsPerVoice.add(temp.getDuration().getDoubleValue());
+
                             // and add the voice
                             voices.add(v);
-                            lastVoicePlayed = voiceToPlayIndex;
                         } else {
                             // Give the lowest voice the note
-                            Voice thisVoice = voices.get(voiceToPlayIndex);
-
-                            if (voiceToPlayIndex != lastVoicePlayed) {
-                                // Keeping track of how many beats we are into the file,
-                                // catch this voice up with a corresponding number of rests from its last note
-                                double thisVoiceBeatValue = beatsPerVoice.get(voiceToPlayIndex);
-                                double differenceFromMax = Collections.max(beatsPerVoice) - thisVoiceBeatValue;
-
-                                // Catch voice up
-                                if (differenceFromMax != 0.0) {
-                                    Duration[] restDurations = Duration.generateMultipleDurations(differenceFromMax);
-
-                                    for (Duration d : restDurations) {
-                                        thisVoice.addNote(new Rest(d));
-                                    }
-                                }
-                            }
+                            Voice v = voices.get(voiceToPlayIndex);
 
                             // then add note
-                            thisVoice.addNote(temp);
-                            lastVoicePlayed = voiceToPlayIndex;
+                            v.addNote(temp);
                         }
 
-                        soundingNotes.put(temp, new MidiNoteTuple(tickTime, noteOnIndex++));
+                        soundingNotes.put(temp, tickTime);
 
                         System.out.println("Note on, " + noteName + octave + " key=" + key + " velocity: " + velocity);
                     } else if (sm.getCommand() == ShortMessage.NOTE_OFF) {
@@ -167,23 +136,21 @@ public class MidiFileParser {
                         String noteName = NOTE_NAMES[note];
                         int velocity = sm.getData2();
 
-                        // Create a note equal to stored one, to get its tuple
-                        String noteString = noteName + octave + ":Q";
+                        // Create a note equal to stored one, to get its value
+                        String noteString = noteName + octave + ":N";
                         Note temp = new Note(noteString);
 
                         // Find the associated closing event for this note, and calculate its duration
                         // Remove it as well, since it is no longer sounding
-                        MidiNoteTuple mnp = soundingNotes.remove(temp);
+                        long startTime = soundingNotes.remove(temp);
 
-                        long noteTicks = tickTime - mnp.startTime;
+                        long noteTicks = tickTime - startTime;
                         double fractionOfQuarterNote = roundDoubleToCleanFraction(noteTicks / resolution);
                         Duration approxDuration = Duration.getDurationByRatio(new Duration("Q"), fractionOfQuarterNote);
 
                         // Have all info about note, calculate timing
                         boolean done = false;
-                        for (int k = 0; k < voices.size(); k++) {
-                            Voice v = voices.get(k);
-
+                        for (Voice v : voices) {
                             if (!done) {
                                 for (int j = v.size() - 1; j >= 0; j--) {
                                     // Find (best guess) temporary note corresponding to this one
@@ -192,13 +159,29 @@ public class MidiFileParser {
                                         temp2.setDuration(approxDuration);
                                         done = true;
 
-                                        // save duration info
-                                        beatsPerVoice.set(k, beatsPerVoice.get(k) + approxDuration.getDoubleValue());
                                         break;
                                     }
                                 }
                             }
                         }
+
+                        // if any sounding note's duration is not known, do not catch up voices
+                        boolean unknown = false;
+
+                        for (Note n : soundingNotes.keySet()) {
+                            if (n.getDuration().equals(new Duration(Duration.DurationValue.NULL, false))) {
+                                unknown = true;
+                                break;
+                            }
+                        }
+
+                        if (!unknown) {
+                            // catch all voices up to voice 0
+                            for (Voice v : voices) {
+                                catchUpVoices(voices.get(0), v);
+                            }
+                        }
+
 
                         System.out.println("Note off, " + noteName + octave + " key=" + key + " velocity: " + velocity);
                     } else {
@@ -291,6 +274,32 @@ public class MidiFileParser {
         }
     }
 
+    /**
+     * Makes the two voices have equal numbers of beats, adding rests to the voice with less beats.
+     * Modifies at most one parameter.
+     *
+     * @param v0 The first voice
+     * @param v1 The second voice
+     */
+    private void catchUpVoices(Voice v0, Voice v1) {
+        double v0Time = v0.getTotalDurationValue();
+        double v1Time = v1.getTotalDurationValue();
+
+        if (v0Time == v1Time) {
+            return;
+        }
+
+        Voice behind = v1Time < v0Time ? v1 : v0;
+
+        double difference = Math.abs(v0Time - v1Time);
+
+        Duration[] rests = Duration.generateMultipleDurations(difference);
+
+        for (Duration d : rests) {
+            behind.addNote(new Rest(d));
+        }
+    }
+
     private String decimalToString(int[] bytes) {
         String toReturn = "";
 
@@ -346,23 +355,18 @@ public class MidiFileParser {
         return 0.0625;
     }
 
-    /**
-     * Container for note timing information in MIDI.
-     * <p>
-     * For use in calculating approximate note value based on ms and tempo.
-     */
-    private class MidiNoteTuple {
-        public final long startTime;
-        public final int index;
+    private int findMaxElementIndex(List<Double> d) {
+        double max = -1;
+        int maxIndex = -1;
 
-        public MidiNoteTuple(long startTime, int index) {
-            this.startTime = startTime;
-            this.index = index;
+        for (int i = 0; i < d.size(); i++) {
+            double temp = d.get(i);
+            if (temp > max) {
+                max = temp;
+                maxIndex = i;
+            }
         }
 
-        @Override
-        public String toString() {
-            return "Start time: " + startTime + ", index: " + index;
-        }
+        return maxIndex;
     }
 }

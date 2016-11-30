@@ -7,10 +7,10 @@ import music.rhythm.Rest;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 /**
- *
  * @author reedt
  */
 public class Voice {
@@ -23,7 +23,7 @@ public class Voice {
     }
 
     public Voice(List<BasicNote> melody) {
-       this.melody = melody;
+        this.melody = melody;
         this.index = 0;
     }
 
@@ -43,6 +43,7 @@ public class Voice {
 
     /**
      * Create a Voice out of multiple Note strings of the form [notestring],[notestring],[notestring]...
+     *
      * @param voiceString Voice string to parse
      * @return The created object
      */
@@ -65,7 +66,7 @@ public class Voice {
     public String toString() {
         StringBuilder sb = new StringBuilder();
 
-        for (BasicNote b: melody) {
+        for (BasicNote b : melody) {
             sb.append(String.format("%-7s", b.toNoteString()).replace(' ', '.'));
         }
 
@@ -74,8 +75,9 @@ public class Voice {
 
     /**
      * Utility used to remove characters from the end of a string.
+     *
      * @param toTrim String to trim
-     * @param ch Character to remove
+     * @param ch     Character to remove
      * @return The string with all instances of ch removed from the tail.
      */
     private static String trimEnd(String toTrim, char ch) {
@@ -97,7 +99,40 @@ public class Voice {
     }
 
     /**
+     * Sum all note values in this Voice, producing an array of largest-value Durations.
+     *
+     * @return An array of Durations, in the largest possible units.
+     */
+    public Duration[] getTotalDuration() {
+        double sum = 0;
+
+        for (BasicNote b : melody) {
+            sum += b.getDuration().getDoubleValue();
+        }
+
+        return Duration.generateMultipleDurations(sum);
+    }
+
+    /**
+     * Sum all note values in this Voice.
+     *
+     * @return Their total duration, represented in beats.
+     */
+    public double getTotalDurationValue() {
+        Duration[] s = getTotalDuration();
+
+        double sum = 0;
+
+        for (Duration d : s) {
+            sum += d.getDoubleValue();
+        }
+
+        return sum;
+    }
+
+    /**
      * Add a note to this Voice.
+     *
      * @param n The note or rest to add
      * @return The current object, for chained calls
      */
@@ -109,7 +144,8 @@ public class Voice {
 
     /**
      * Replaces the element at the given index with the given BasicNote.
-     * @param n The note to replace with.
+     *
+     * @param n     The note to replace with.
      * @param index The index to replace.
      * @return The current object
      */
@@ -120,7 +156,20 @@ public class Voice {
     }
 
     /**
+     * Add a collection of notes to this Voice.
+     *
+     * @param notes The notes or rests to add
+     * @return The current object, for chained calls
+     */
+    public Voice addNotes(Note... notes) {
+        Collections.addAll(melody, notes);
+
+        return this;
+    }
+
+    /**
      * Get the number of notes in this Voice
+     *
      * @return The number of notes.
      */
     public int size() {
@@ -130,6 +179,7 @@ public class Voice {
     /**
      * Get the index of this Voice.
      * Defaults to 0.
+     *
      * @return The index of this Voice
      */
     public int getIndex() {
@@ -138,6 +188,7 @@ public class Voice {
 
     /**
      * Get the Note that is at a given index in this voice.
+     *
      * @param index The index to retrieve from
      * @return The present note.
      */
