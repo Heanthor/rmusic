@@ -1,7 +1,5 @@
 package midi;
 
-import javax.sound.midi.*;
-
 import music.pitch.BasicNote;
 import music.pitch.Note;
 import music.play.Staff;
@@ -11,9 +9,11 @@ import music.play.Voice;
 import music.play.key.MajorSharpKeys;
 import music.rhythm.Rest;
 
+import javax.sound.midi.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * @author reedt
@@ -73,7 +73,7 @@ public class PlaySoundMidi {
             //Staff tchaikovskyVC1 = parser.loadAndParseFile(new File("bin/midifiles/tchop35a.mid"));
             System.out.println(furElise);
             m.playStaff(furElise);
-        } catch (InvalidMidiDataException | IOException e) {
+        } catch (InvalidMidiDataException | IOException | InterruptedException e) {
             e.printStackTrace();
         }
     }
@@ -110,7 +110,7 @@ public class PlaySoundMidi {
         }
     }
 
-    private void playStaff(Staff f) {
+    private void playStaff(Staff f) throws InterruptedException {
         Tempo t = f.tempo;
 
         // Warm up thread sleep
@@ -120,8 +120,18 @@ public class PlaySoundMidi {
             e.printStackTrace();
         }
 
+        // start all threads at same time for more precise playback
+        CountDownLatch countDownLatch = new CountDownLatch(f.voices.size() - 1);
+
         for (Voice v : f.voices) {
             new Thread(() -> {
+                try {
+                    countDownLatch.countDown();
+                    countDownLatch.await();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
                 for (BasicNote n : v.melody) {
                     playNote(n, t, 0);
                 }
