@@ -50,7 +50,7 @@ public class Staff {
         String kString;
 
         if (keySignature == null) {
-            kString = "null";
+            kString = "n/a";
         } else {
             kString = keySignature.toString();
         }

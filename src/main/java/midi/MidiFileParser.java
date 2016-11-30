@@ -66,6 +66,7 @@ public class MidiFileParser {
         float resolution = sequence.getResolution();
 
         int trackNumber = 0;
+        // Note, start time
         Map<Note, Long> soundingNotes = new HashMap<>();
 
         // Dynamically grow based on need for more voices
@@ -130,60 +131,7 @@ public class MidiFileParser {
 
                         System.out.println("Note on, " + noteName + octave + " key=" + key + " velocity: " + velocity);
                     } else if (sm.getCommand() == ShortMessage.NOTE_OFF) {
-                        int key = sm.getData1();
-                        int octave = (key / 12) - 1;
-                        int note = key % 12;
-                        String noteName = NOTE_NAMES[note];
-                        int velocity = sm.getData2();
-
-                        // Create a note equal to stored one, to get its value
-                        String noteString = noteName + octave + ":N";
-                        Note temp = new Note(noteString);
-
-                        // Find the associated closing event for this note, and calculate its duration
-                        // Remove it as well, since it is no longer sounding
-                        long startTime = soundingNotes.remove(temp);
-
-                        long noteTicks = tickTime - startTime;
-                        double fractionOfQuarterNote = roundDoubleToCleanFraction(noteTicks / resolution);
-                        Duration approxDuration = Duration.getDurationByRatio(new Duration("Q"), fractionOfQuarterNote);
-
-                        // Have all info about note, calculate timing
-                        boolean done = false;
-                        for (Voice v : voices) {
-                            if (!done) {
-                                for (int j = v.size() - 1; j >= 0; j--) {
-                                    // Find (best guess) temporary note corresponding to this one
-                                    BasicNote temp2 = v.getNote(j);
-                                    if (temp2.equals(temp)) {
-                                        temp2.setDuration(approxDuration);
-                                        done = true;
-
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-
-                        // if any sounding note's duration is not known, do not catch up voices
-                        boolean unknown = false;
-
-                        for (Note n : soundingNotes.keySet()) {
-                            if (n.getDuration().equals(new Duration(Duration.DurationValue.NULL, false))) {
-                                unknown = true;
-                                break;
-                            }
-                        }
-
-                        if (!unknown) {
-                            // catch all voices up to voice 0
-                            for (Voice v : voices) {
-                                catchUpVoices(voices.get(0), v);
-                            }
-                        }
-
-
-                        System.out.println("Note off, " + noteName + octave + " key=" + key + " velocity: " + velocity);
+                        processNoteOff(resolution, soundingNotes, voices, tickTime, sm);
                     } else {
                         System.out.println("Command: " + sm.getCommand());
                     }
@@ -202,6 +150,67 @@ public class MidiFileParser {
         }
 
         return new Staff(fileTempo, timeSignature, voices);
+    }
+
+    private void processNoteOff(float resolution, Map<Note, Long> soundingNotes, ArrayList<Voice> voices, long tickTime, ShortMessage sm) {
+        int key = sm.getData1();
+        int octave = (key / 12) - 1;
+        int note = key % 12;
+        String noteName = NOTE_NAMES[note];
+        int velocity = sm.getData2();
+
+        // Create a note equal to stored one, to get its value
+        String noteString = noteName + octave + ":N";
+        Note temp = new Note(noteString);
+
+        // Find the associated closing event for this note, and calculate its duration
+        // Remove it as well, since it is no longer sounding
+        long startTime = soundingNotes.remove(temp);
+
+        long noteTicks = tickTime - startTime;
+        double fractionOfQuarterNote = roundDoubleToCleanFraction(noteTicks / resolution);
+        Duration approxDuration = Duration.getDurationByRatio(new Duration("Q"), fractionOfQuarterNote);
+
+        // Have all info about note, calculate timing
+        boolean done = false;
+        Voice voiceAddedTo = null;
+
+        for (Voice v : voices) {
+            if (!done) {
+                for (int j = v.size() - 1; j >= 0; j--) {
+                    // Find (best guess) temporary note corresponding to this one
+                    BasicNote temp2 = v.getNote(j);
+                    if (temp2.equals(temp)) {
+                        temp2.setDuration(approxDuration);
+                        done = true;
+                        voiceAddedTo = v;
+
+                        break;
+                    }
+                }
+            }
+        }
+
+        // if any sounding note's duration is not known, do not catch up voices
+
+        // catch all voices up to voice 0
+        for (Voice v : voices) {
+            boolean unknown = false;
+
+            for (BasicNote n : v.melody) {
+                if (n.getDuration().equals(new Duration(Duration.DurationValue.NULL, false))) {
+                    unknown = true;
+                    break;
+                }
+            }
+
+            if (!unknown) {
+                catchUpVoices(voiceAddedTo, v);
+            }
+        }
+
+
+        System.out.println("Note off, " + noteName + octave + " key=" + key + " velocity: " + velocity);
     }
 
     // Might be unused

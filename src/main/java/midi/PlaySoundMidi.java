@@ -115,7 +115,7 @@ public class PlaySoundMidi {
 
         // Warm up thread sleep
         try {
-            Thread.sleep(50);
+            Thread.sleep(300);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
