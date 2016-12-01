@@ -69,10 +69,11 @@ public class PlaySoundMidi {
 //            m.playStaff(mozartK545);
 //        }).start();
         try {
-            Staff furElise = parser.loadAndParseFile(new File("bin/midifiles/for_elise_by_beethoven.mid"));
-            //Staff tchaikovskyVC1 = parser.loadAndParseFile(new File("bin/midifiles/tchop35a.mid"));
-            System.out.println(furElise);
-            m.playStaff(furElise);
+            Staff s = parser.loadAndParseFile(new File("bin/midifiles/for_elise_by_beethoven.mid"));
+            //Staff s = parser.loadAndParseFile(new File("bin/midifiles/tchop35a.mid"));
+            //Staff s = parser.loadAndParseFile(new File("bin/midifiles/mz_331_1.mid"));
+            System.out.println(s);
+            m.playStaff(s);
         } catch (InvalidMidiDataException | IOException | InterruptedException e) {
             e.printStackTrace();
         }

@@ -64,4 +64,9 @@ public class Staff {
 
         return staffInfo + "\n" + voiceString;
     }
+
+    public String printAlignedStaff() {
+        //TODO
+        return null;
+    }
 }

@@ -62,4 +62,10 @@ public class DurationTest {
         assertEquals(half, Duration.getDurationByRatio(quarter, 2.0));
         assertEquals(eighth, Duration.getDurationByRatio(whole, 0.125));
     }
+
+    @Test
+    public void testSubdivideUnits() {
+        assertEquals(half, whole.subdivideUnits());
+        assertEquals(eighth, quarter.subdivideUnits());
+    }
 }

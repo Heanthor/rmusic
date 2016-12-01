@@ -398,6 +398,12 @@ public class Duration {
 
         return sum;
     }
+
+    public Duration subdivideUnits() {
+        //TODO
+        return null;
+    }
+
     /**
      * Get the code for this Duration, E.g.
      * Quarter -> Q

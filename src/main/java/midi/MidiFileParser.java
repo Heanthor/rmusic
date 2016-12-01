@@ -60,11 +60,18 @@ public class MidiFileParser {
     private ArrayList<Voice> voices;
 
     /**
+     * Tick when the last note event was found.
+     * Used to determine when to insert rests on all voices.
+     */
+    private long lastNoteAction = 0;
+
+    /**
      * Parse a midi file into a Staff. Attempts to match event time intervals to the closest note value this program can model.
+     *
      * @param f A File object representing a .midi file.
      * @return A Staff representing the data in the midi file.
      * @throws InvalidMidiDataException If the file provided is not a valid MIDI file.
-     * @throws IOException If a file reading error occurs.
+     * @throws IOException              If a file reading error occurs.
      */
     public Staff loadAndParseFile(File f) throws InvalidMidiDataException, IOException {
         Sequence sequence = MidiSystem.getSequence(f);
@@ -130,12 +137,18 @@ public class MidiFileParser {
         return new Staff(fileTempo, timeSignature, voices);
     }
 
-    private void processNoteOn(long tickTime, ShortMessage sm) {
+    private void processNoteOn(long eventTickTime, ShortMessage sm) {
         int key = sm.getData1();
         int octave = (key / 12) - 1;
         int note = key % 12;
         String noteName = NOTE_NAMES[note];
         int velocity = sm.getData2();
+
+        // some midi files encode a NOTE_OFF event as NOTE_ON with velocity 0
+        if (velocity == 0) {
+            processNoteOff(eventTickTime, sm);
+            return;
+        }
 
         // This note is currently playing, push to stack
         // Give note a temporary quarter note time, this will change
@@ -165,7 +178,7 @@ public class MidiFileParser {
             v.addNote(temp);
         }
 
-        soundingNotes.put(temp, tickTime);
+        soundingNotes.put(temp, eventTickTime);
 
         System.out.println("Note on, " + noteName + octave + " key=" + key + " velocity: " + velocity);
     }
@@ -183,11 +196,15 @@ public class MidiFileParser {
 
         // Find the associated closing event for this note, and calculate its duration
         // Remove it as well, since it is no longer sounding
-        long startTime = soundingNotes.remove(temp);
+        long startTime;
+        if (soundingNotes.containsKey(temp)) {
+            startTime = soundingNotes.remove(temp);
+        } else {
+            return;
+        }
 
         long noteTicks = eventTickTime - startTime;
-        double fractionOfQuarterNote = roundDoubleToCleanFraction(noteTicks / resolution);
-        Duration approxDuration = Duration.getDurationByRatio(new Duration("Q"), fractionOfQuarterNote);
+        Duration approxDuration = ticksToApproxDuration(noteTicks);
 
         // Have all info about note, calculate timing
         boolean done = false;
@@ -226,7 +243,14 @@ public class MidiFileParser {
             }
         }
 
+        lastNoteAction = eventTickTime;
+
         System.out.println("Note off, " + noteName + octave + " key=" + key + " velocity: " + velocity);
+    }
+
+    private Duration ticksToApproxDuration(long noteTicks) {
+        double fractionOfQuarterNote = roundDoubleToCleanFraction(noteTicks / resolution);
+        return Duration.getDurationByRatio(new Duration("Q"), fractionOfQuarterNote);
     }
 
     private void parseMetaMessage(MetaMessage message) {
@@ -279,6 +303,7 @@ public class MidiFileParser {
 
     /**
      * Calculates the length of a tick based on resolution read earlier in the file.
+     *
      * @param divisionType The MIDI code representing the division type, either PPQ or SMPTE.
      * @return The tick size, as fractions of a second.
      */
@@ -365,21 +390,28 @@ public class MidiFileParser {
      * Rounds fractions up or down to clean intervals, as used in musical notation.
      * These durations are:
      * <ol>
-     *     <li>Eighth (0.5)</li>
-     *     <li>Sixteenth (0.25)</li>
-     *     <li>Thirty-second (0.125)</li>
-     *     <li>Sixty-fourth (0.0625)</li>
+     * <li>Eighth (0.5)</li>
+     * <li>Sixteenth (0.25)</li>
+     * <li>Thirty-second (0.125)</li>
+     * <li>Sixty-fourth (0.0625)</li>
      * </ol>
+     * <p>
+     * as well as dotted versions of each up to thirty-second note.
+     *
      * @param d The floating point number to round
      * @return The floating point fraction in the list closest to d.
      */
     private double roundDoubleToCleanFraction(double d) {
         // Based on max sixty fourth second resolution
         double[] acceptableFractionsOfQuarterNote = {
+                0.75, // dotted eigth
                 0.5, // eighth
+                0.375, // dotted sixteenth
                 0.25, // sixteenth
+                0.1875, // dotted thirty-second
                 0.125, // thirty-second
-                0.0625 // sixty-fourth
+                0.0625, // sixty-fourth
+                0 // too short to count
         };
 
         double minDistance = Double.MAX_VALUE;
@@ -395,11 +427,12 @@ public class MidiFileParser {
         }
 
         // The smallest resolution accepted falls through
-        return 0.0625;
+        return 0;
     }
 
     /**
      * Find the index of the max element in the given list.
+     *
      * @param d List of doubles
      * @return The index of the maximum element in the list, or -1 if the list is empty.
      */
