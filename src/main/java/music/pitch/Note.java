@@ -197,6 +197,17 @@ public class Note implements BasicNote, Comparable<Note> {
     }
 
     /**
+     * Formats a note or rest into a compact format, exactly 7 characters long, e.g.:
+     * The note E5, duration sixteenth note: E5:S...
+     * D#5 sixteenth: D#5:S..
+     * @param b The Note or Rest to parse
+     * @return a 7 character long string representing the note or rest in a notestring form.
+     */
+    public static String compactFormatBasicNote(BasicNote b) {
+        return String.format("%-7s", b.toNoteString()).replace(' ', '.');
+    }
+
+    /**
      * @return String in form "Pitch: [base pitch][accidental], Duration: [duration]"
      */
     @Override
