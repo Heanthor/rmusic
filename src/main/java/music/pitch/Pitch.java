@@ -16,7 +16,7 @@ public class Pitch {
     }
 
     private static final HashBiMap<NoteValue, Integer> numValues = HashBiMap.create();
-    private static final HashMap<NoteValue.Accidental, Integer> modificationValues = new HashMap<NoteValue.Accidental, Integer>();
+    private static final HashMap<NoteValue.Accidental, Integer> modificationValues = new HashMap<>();
 
     static {
         // Create association between pitch and integer

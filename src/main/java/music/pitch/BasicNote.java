@@ -30,7 +30,7 @@ public interface BasicNote {
     int getIndex();
     /**
      * Computes equals() between two BasicNotes, including the optional midi index given to the constructor.
-     * @param o Object to compare
+     * @param b Object to compare
      * @return True if equal, false if not
      */
     boolean equalsIndex(BasicNote b);

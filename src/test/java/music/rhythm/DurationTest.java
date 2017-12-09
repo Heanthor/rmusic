@@ -12,6 +12,7 @@ public class DurationTest {
     private Duration quarter = new Duration(Duration.DurationValue.QUARTER, false);
     private Duration half = new Duration(Duration.DurationValue.HALF, false);
     private Duration eighth = new Duration(Duration.DurationValue.EIGHTH, false);
+    private Duration sixtyFourth = new Duration(Duration.DurationValue.SIXTY_FOURTH, false);
     private Duration dottedQuarter = new Duration(Duration.DurationValue.QUARTER, true);
     private Duration dottedHalf = new Duration(Duration.DurationValue.HALF, true);
 
@@ -64,8 +65,20 @@ public class DurationTest {
     }
 
     @Test
-    public void testSubdivideUnits() {
-        assertEquals(half, whole.subdivideUnits());
-        assertEquals(eighth, quarter.subdivideUnits());
+    public void testGenerateMultipleDurations() {
+        Duration[] test1 = new Duration[]{whole, whole, quarter};
+        Duration[] test2 = new Duration[]{eighth, eighth, eighth, eighth, eighth, eighth, eighth, eighth};
+
+        assertEquals(Duration.sumDurationArray(test1),
+                Duration.sumDurationArray(Duration.generateMultipleDurations(2.25)), 0);
+        assertEquals(Duration.sumDurationArray(test2),
+                Duration.sumDurationArray(Duration.generateMultipleDurations(1)), 0);
+    }
+
+    @Test
+    public void testSubdivide() {
+        assertEquals(half, whole.subdivide());
+        assertEquals(eighth, quarter.subdivide());
+        assertEquals(null, sixtyFourth.subdivide());
     }
 }

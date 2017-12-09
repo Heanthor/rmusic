@@ -341,7 +341,7 @@ public class Duration {
 
     /**
      * Generate Durations (maximum size whole note) out of the given double value.
-     * Doubel value must divide nicely into durations.
+     * Double value must divide nicely into durations.
      * @param value Value to break into Durations
      * @return The generated Durations
      */
@@ -399,9 +399,17 @@ public class Duration {
         return sum;
     }
 
-    public Duration subdivideUnits() {
-        //TODO
-        return null;
+    /**
+     * Subdivide the given duration, returning the next shortest Duration, or null if resolution is not great enough.
+     * E.g. eighth -> quarter
+     * @return The Duration found by dividing the current Duration by 2.
+     */
+    public Duration subdivide() {
+        if (this.value == DurationValue.SIXTY_FOURTH) {
+            return null;
+        }
+
+        return fractionToDuration(this.durationValue.multiply(new Fraction(1, 2)));
     }
 
     /**

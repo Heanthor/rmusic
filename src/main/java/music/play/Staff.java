@@ -57,9 +57,9 @@ public class Staff {
 
         String staffInfo = String.format("Staff: Tempo: %d bpm, Key %s, Time Signature %d/%d\n",
                 tempo.bpm, kString, timeSignature.getNumerator(), timeSignature.getDenominator());
-        String voiceString = "";
+        StringBuilder voiceString = new StringBuilder();
         for (Voice v: voices) {
-            voiceString += v.toString() + "\n";
+            voiceString.append(v.toString()).append("\n");
         }
 
         return staffInfo + "\n" + voiceString;

@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
  * @author Reed
  */
 public class Chord implements BasicNote {
-    public final ArrayList<Note> chord = new ArrayList<Note>();
+    public final ArrayList<Note> chord = new ArrayList<>();
     private int index = -1;
 
     /**
@@ -51,7 +51,7 @@ public class Chord implements BasicNote {
     }
 
     public String toString() {
-        ArrayList<String> sortedList = new ArrayList<String>(chord.size());
+        ArrayList<String> sortedList = new ArrayList<>(chord.size());
 
         sortedList.addAll(chord.stream().map(Note::pitchOnlyToString).collect(Collectors.toList()));
 
