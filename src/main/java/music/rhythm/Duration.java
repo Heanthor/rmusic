@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  * Currently supports common non-triplet note values, up to sixty-fourth notes.
  * This class does support durations with value 0.
  */
-public class Duration {
+public class Duration implements Comparable<Duration> {
     public enum DurationValue {
         WHOLE,
         HALF,
@@ -238,6 +238,7 @@ public class Duration {
      * Create a new Duration with the given decimal value.
      * This will fail if the decimal value is not a clean fraction
      * able to be made into a duration.
+     *
      * @param durationDecimal The duration decimal
      */
     public Duration(double durationDecimal) {
@@ -266,6 +267,17 @@ public class Duration {
             // E.g. 3/4 -> dotted half (1/2 + dot)
             // 3/8 -> dotted quarter (1/4 + dot)
             return new Duration(baseNote, true);
+        }
+    }
+
+    @Override
+    public int compareTo(Duration o) {
+        if (this.getDoubleValue() < o.getDoubleValue()) {
+            return -1;
+        } else if (this.getDoubleValue() > o.getDoubleValue()) {
+            return 1;
+        } else {
+            return 0;
         }
     }
 
@@ -426,6 +438,7 @@ public class Duration {
 
     /**
      * Get this Duration's value as a double.
+     *
      * @return The double representation of this duration.
      */
     public double getDoubleValue() {

@@ -458,5 +458,6 @@ public class MidiFileParser {
         Staff f = new MidiFileParser().loadAndParseFile(furElise);
 
         System.out.println(f.toString());
+        System.out.println(f.getAlignedStaff());
     }
 }

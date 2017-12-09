@@ -5,7 +5,6 @@ import music.pitch.Note;
 import music.rhythm.Duration;
 import music.rhythm.Rest;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -67,7 +66,7 @@ public class Voice {
         StringBuilder sb = new StringBuilder();
 
         for (BasicNote b : melody) {
-            sb.append(String.format("%-7s", b.toNoteString()).replace(' ', '.'));
+            sb.append(Note.compactFormatBasicNote(b));
         }
 
         return trimEnd("Voice " + index + ": " + sb.toString(), '.');

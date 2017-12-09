@@ -4,9 +4,13 @@ import music.pitch.BasicNote;
 import music.pitch.Note;
 import music.play.key.Key;
 import music.play.key.KeySignature;
+import music.rhythm.Duration;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Stack;
+import java.util.stream.Collectors;
 
 /**
  * @author reedt
@@ -47,13 +51,7 @@ public class Staff {
 
     @Override
     public String toString() {
-        String kString;
-
-        if (keySignature == null) {
-            kString = "n/a";
-        } else {
-            kString = keySignature.toString();
-        }
+        String kString = keySignature == null ? "n/a" : keySignature.toString();
 
         String staffInfo = String.format("Staff: Tempo: %d bpm, Key %s, Time Signature %d/%d\n",
                 tempo.bpm, kString, timeSignature.getNumerator(), timeSignature.getDenominator());
@@ -65,8 +63,46 @@ public class Staff {
         return staffInfo + "\n" + voiceString;
     }
 
-    public String printAlignedStaff() {
+    public String getAlignedStaff() {
+        // init lines
+        ArrayList<StringBuilder> lines = new ArrayList<>(voices.stream().
+                map(voice -> new StringBuilder(voice.getNote(0).toString())).collect(Collectors.toList()));
+
+        // init to 0 for each voice
+        ArrayList<Integer> posPointers = voices.stream().
+                map(v -> 0).collect(Collectors.toCollection(ArrayList::new));
+
+        Duration minResolution = new Duration(Duration.DurationValue.WHOLE, false);
+
+        for (int i = 0; i < voices.size(); i++) {
+            Voice v = voices.get(i);
+            // pull the note at each pointer's location
+            BasicNote n = v.getNote(posPointers.get(i));
+
+            if (n.getDuration().compareTo(minResolution) < 0) {
+                minResolution = n.getDuration();
+            }
+        }
+
+        // min resolution gets incremented, others do not
+        for (int i = 0; i < voices.size(); i++) {
+            Voice v = voices.get(i);
+            BasicNote n = v.getNote(posPointers.get(i));
+
+            if (n.getDuration().equals(minResolution)) {
+                lines.get(i).append(n.toString());
+            } else {
+                lines.get(i).append("...");
+            }
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        for (StringBuilder line: lines) {
+            sb.append(line).append("\n");
+        }
+
         //TODO
-        return null;
+        return sb + "\n";
     }
 }

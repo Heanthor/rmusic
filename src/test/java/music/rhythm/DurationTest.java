@@ -19,7 +19,6 @@ public class DurationTest {
 
     @Test
     public void testConstructor() {
-
         assertEquals("Duration: whole", whole.toString());
 
         assertEquals("Duration: dotted half", dottedHalf.toString());
@@ -80,5 +79,14 @@ public class DurationTest {
         assertEquals(half, whole.subdivide());
         assertEquals(eighth, quarter.subdivide());
         assertEquals(null, sixtyFourth.subdivide());
+    }
+
+    @Test
+    public void testCompare() {
+        assertTrue(half.compareTo(whole) < 0);
+        assertTrue(half.compareTo(half) == 0);
+        assertTrue(quarter.compareTo(eighth) > 0);
+
+        assertTrue(dottedHalf.compareTo(half) > 0);
     }
 }
