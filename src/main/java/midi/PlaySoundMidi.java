@@ -93,7 +93,6 @@ public class PlaySoundMidi {
 
             currentChannel.noteOn(noteValue, velocity);
 
-
             try {
                 Thread.sleep(noteDuration);
             } catch (InterruptedException e) {

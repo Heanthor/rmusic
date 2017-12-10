@@ -24,29 +24,29 @@ public class Staff {
     public Staff(Tempo tempo, Key key, TimeSignature timeSignature, List<Voice> voices) {
         this.tempo = tempo;
         this.voices = voices;
-        this.keySignature = key.getKeySignature();
+        this.keySignature = key == null ? null : key.getKeySignature();
         this.timeSignature = timeSignature;
     }
 
     public Staff(Tempo tempo, Key key, TimeSignature timeSignature, Voice[] voices) {
         this.tempo = tempo;
         this.voices = Arrays.asList(voices);
-        this.keySignature = key.getKeySignature();
+        this.keySignature = key == null ? null : key.getKeySignature();
         this.timeSignature = timeSignature;
     }
 
     public Staff(Tempo tempo, TimeSignature ts, Voice[] voices) {
         this.tempo = tempo;
         this.voices = Arrays.asList(voices);
-        keySignature = null;
-        timeSignature = ts;
+        this.keySignature = null;
+        this.timeSignature = ts;
     }
 
     public Staff(Tempo tempo, TimeSignature ts, List<Voice> voices) {
         this.tempo = tempo;
         this.voices = voices;
-        keySignature = null;
-        timeSignature = ts;
+        this.keySignature = null;
+        this.timeSignature = ts;
     }
 
     @Override
@@ -104,5 +104,28 @@ public class Staff {
 
         //TODO
         return sb + "\n";
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Staff staff = (Staff) o;
+
+        if (!tempo.equals(staff.tempo)) return false;
+        if (keySignature != null ? !keySignature.equals(staff.keySignature) : staff.keySignature != null) return false;
+        if (!timeSignature.equals(staff.timeSignature)) return false;
+
+        return voices.equals(staff.voices);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = tempo.hashCode();
+        result = 31 * result + (keySignature != null ? keySignature.hashCode() : 0);
+        result = 31 * result + timeSignature.hashCode();
+        result = 31 * result + voices.hashCode();
+        return result;
     }
 }

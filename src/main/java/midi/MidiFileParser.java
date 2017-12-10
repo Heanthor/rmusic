@@ -90,7 +90,6 @@ public class MidiFileParser {
         int trackNumber = 0;
         soundingNotes = new HashMap<>();
 
-
         voices = new ArrayList<>();
         // add primary voice
         voices.add(new Voice(new ArrayList<>()));
@@ -388,10 +387,17 @@ public class MidiFileParser {
 
     /**
      * Rounds fractions up or down to clean intervals, as used in musical notation.
-     * These durations are:
+     * These durations are (with quarter note == 1):
      * <ol>
+     * <li>Whole (4)</li>
+     * <li>Dotted half (3)</li>
+     * <li>Half (2)</li>
+     * <li>Dotted quarter (1.5)</li>
+     * <li>Quarter (1)</li>
      * <li>Eighth (0.5)</li>
+     * <li>Dotted eighth (0.75)</li>
      * <li>Sixteenth (0.25)</li>
+     * <li>Dotted sixteenth (0.1875)</li>
      * <li>Thirty-second (0.125)</li>
      * <li>Sixty-fourth (0.0625)</li>
      * </ol>
@@ -404,6 +410,11 @@ public class MidiFileParser {
     private double roundDoubleToCleanFraction(double d) {
         // Based on max sixty fourth second resolution
         double[] acceptableFractionsOfQuarterNote = {
+                4, // whole
+                3, // dotted half
+                2, // half
+                1.5, // dotted quarter
+                1, // quarter
                 0.75, // dotted eigth
                 0.5, // eighth
                 0.375, // dotted sixteenth
@@ -418,6 +429,7 @@ public class MidiFileParser {
 
         for (int i = 0; i < acceptableFractionsOfQuarterNote.length; i++) {
             double distance = Math.abs(d - acceptableFractionsOfQuarterNote[i]);
+
             if (distance < minDistance) {
                 minDistance = distance;
             } else {

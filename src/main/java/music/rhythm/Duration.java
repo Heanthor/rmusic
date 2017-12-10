@@ -389,7 +389,7 @@ public class Duration implements Comparable<Duration> {
 
     /**
      * Gets the Duration represented as a fraction of the current duration.
-     * For example, if the current object is a quarter note, a ratio of 0.5 would return an eighth note.
+     * For example, if the base note is a quarter note, a ratio of 0.5 would return an eighth note.
      *
      * @param ratio The base note to calculate ratio over
      * @param ratio The ratio of the desired Duration to the current object.
