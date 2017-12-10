@@ -186,4 +186,23 @@ public class Voice {
     public BasicNote getNote(int index) {
         return melody.get(index);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Voice voice = (Voice) o;
+
+        if (index != voice.index) return false;
+        return melody.equals(voice.melody);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = melody.hashCode();
+        result = 31 * result + index;
+        return result;
+    }
 }

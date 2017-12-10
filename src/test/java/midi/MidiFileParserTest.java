@@ -38,29 +38,29 @@ public class MidiFileParserTest {
     @Test
     public void testBasicNotes() {
         testMidi(basic0, new Staff(new Tempo(110), null, new TimeSignature("C"),
-                new Voice[]{new Voice("D5:H,R:Q,D5:Q")}));
+                new Voice[]{new Voice("D4:H,R:Q,D4:Q")}));
     }
 
     @Test
     public void testSimpleMelody() {
         testMidi(basic1, new Staff(new Tempo(110), null, new TimeSignature("C"),
-                new Voice[]{new Voice("G5:Q,D5:Q,R:Q,G5:Q")}));
+                new Voice[]{new Voice("G4:Q,D4:Q,R:Q,G4:Q")}));
     }
 
     @Test
     public void testMultipleVoices() {
         testMidi(basic2, new Staff(new Tempo(110), null, new TimeSignature("C"),
                 new Voice[]{
-                        new Voice("C5:H"),
-                        new Voice("R:E,E5:Qd"),
-                        new Voice("R:Q,G5:Q"),
-                        new Voice("R:Hd,C6:E")}));
+                        new Voice("C4:H"),
+                        new Voice("R:E,E4:Qd"),
+                        new Voice("R:Q,G4:Q"),
+                        new Voice("R:Hd,C5:E")}));
     }
 
     @Test
     public void testSingleVoiceOctaves() {
         testMidi(basic3, new Staff(new Tempo(110), null, new TimeSignature("C"),
-                new Voice[]{new Voice("C5:S,C6:S,B4:S,B5:S,A#4:S,A#5:S,A4:S,A5:S")}));
+                new Voice[]{new Voice("C4:S,C5:S,B3:S,B4:S,A#3:S,A#4:S,A3:S,A4:S")}));
     }
 
     @Test

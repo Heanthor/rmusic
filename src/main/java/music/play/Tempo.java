@@ -82,4 +82,24 @@ public class Tempo {
             return name() + ": " + bpm + " bpm";
         }
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Tempo tempo = (Tempo) o;
+
+        if (bpm != tempo.bpm) return false;
+        if (note != null ? !note.equals(tempo.note) : tempo.note != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = note != null ? note.hashCode() : 0;
+        result = 31 * result + bpm;
+        return result;
+    }
 }

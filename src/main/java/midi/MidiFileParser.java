@@ -66,6 +66,11 @@ public class MidiFileParser {
     private long lastNoteAction = 0;
 
     /**
+     * Track number of processed notes
+     */
+    private int noteNum = 0;
+
+    /**
      * Parse a midi file into a Staff. Attempts to match event time intervals to the closest note value this program can model.
      *
      * @param f A File object representing a .midi file.
@@ -153,6 +158,15 @@ public class MidiFileParser {
         // Give note a temporary quarter note time, this will change
         String noteString = noteName + octave + ":N";
         Note temp = new Note(noteString);
+
+        if (noteNum > 0 && soundingNotes.size() == 0) {
+            // if there are no notes playing, calculate a rest to fill the time between now and the last note off
+            long restTime = eventTickTime - lastNoteAction;
+
+            for (Voice v: voices) {
+                v.addNote(new Rest(ticksToApproxDuration(restTime)));
+            }
+        }
 
         // Push note with dummy duration to voice arrays, to lock in its position
         // notes are added to available voices as needed, or a new voice is added
@@ -243,6 +257,7 @@ public class MidiFileParser {
         }
 
         lastNoteAction = eventTickTime;
+        noteNum++;
 
         System.out.println("Note off, " + noteName + octave + " key=" + key + " velocity: " + velocity);
     }
