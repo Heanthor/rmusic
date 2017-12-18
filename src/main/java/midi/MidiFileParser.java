@@ -18,6 +18,7 @@ import javax.sound.midi.*;
 
 public class MidiFileParser {
     // Sami Koivu on StackOverflow for skeleton
+    // See https://www.csie.ntu.edu.tw/~r92092/ref/midi/ for information on tracks
 
     // meta flags
     private static final int CHANNEL_PREFIX = 0x20;
@@ -71,6 +72,12 @@ public class MidiFileParser {
     private int noteNum = 0;
 
     /**
+     * List of indices to be skipped on the current track.
+     * Reset during parsing (once per track)
+     */
+    private ArrayList<Integer> skipList;
+
+    /**
      * Parse a midi file into a Staff. Attempts to match event time intervals to the closest note value this program can model.
      *
      * @param f A File object representing a .midi file.
@@ -105,6 +112,26 @@ public class MidiFileParser {
             System.out.println("Track " + trackNumber + ": size = " + track.size());
             System.out.println();
 
+            skipList = new ArrayList<>(track.size());
+
+//            // TODO parse into datastructure where events with same tick time are grouped together
+//            // <tickTime> <list of indexes of events at tick>
+//            HashMap<Long, ArrayList<Integer>> eventsAtTick = new HashMap<>();
+//
+//            for (int i = 0; i < track.size(); i++) {
+//                long tick = track.get(i).getTick();
+//
+//                ArrayList<Integer> events;
+//                if ((events = eventsAtTick.get(tick)) != null) {
+//                    events.add(i);
+//                    eventsAtTick.put(tick, events);
+//                } else {
+//                    ArrayList<Integer> temp = new ArrayList<>();
+//                    temp.add(i);
+//                    eventsAtTick.put(tick, temp);
+//                }
+//            }
+
             for (int i = 0; i < track.size(); i++) {
                 MidiEvent event = track.get(i);
                 long tickTime = event.getTick();
@@ -118,9 +145,9 @@ public class MidiFileParser {
                     System.out.print("Channel: " + sm.getChannel() + " ");
 
                     if (sm.getCommand() == ShortMessage.NOTE_ON) {
-                        processNoteOn(tickTime, sm);
-                    } else if (sm.getCommand() == ShortMessage.NOTE_OFF) {
-                        processNoteOff(tickTime, sm);
+                        processNoteOn(tickTime, sm, track, i);
+                    } else if (sm.getCommand() == ShortMessage.NOTE_OFF && !skipList.contains(i)) {
+                        processNoteOff(tickTime, sm, track, i);
                     } else {
                         System.out.println("Command: " + sm.getCommand());
                     }
@@ -141,7 +168,7 @@ public class MidiFileParser {
         return new Staff(fileTempo, timeSignature, voices);
     }
 
-    private void processNoteOn(long eventTickTime, ShortMessage sm) {
+    private void processNoteOn(long eventTickTime, ShortMessage sm, Track currentTrack, int currentIndex) {
         int key = sm.getData1();
         int octave = (key / 12) - 1;
         int note = key % 12;
@@ -150,8 +177,44 @@ public class MidiFileParser {
 
         // some midi files encode a NOTE_OFF event as NOTE_ON with velocity 0
         if (velocity == 0) {
-            processNoteOff(eventTickTime, sm);
+            processNoteOff(eventTickTime, sm, currentTrack, currentIndex);
             return;
+        }
+
+        // before processing this note, seek forward and check for any NOTE_OFF at the same tickTime
+        // do this so that out of order events on the same ms tick do not mess up voicing
+        int lookAheadIndex = currentIndex + 1;
+        long lookAheadTickTime = -1;
+
+        // get the tick time of the next event in sequence first
+        MidiEvent lookAheadEvent = null;
+        if (lookAheadIndex < currentTrack.size()) {
+            lookAheadEvent = currentTrack.get(lookAheadIndex);
+            lookAheadTickTime = lookAheadEvent.getTick();
+        } // else, skip this process since there are no more events to check
+
+        while (lookAheadTickTime == eventTickTime && lookAheadEvent != null) {
+            MidiMessage message = lookAheadEvent.getMessage();
+
+            if (message instanceof ShortMessage) {
+                ShortMessage tmp = (ShortMessage) message;
+
+                if (tmp.getCommand() == ShortMessage.NOTE_OFF) {
+                    processNoteOff(lookAheadTickTime, tmp, currentTrack, lookAheadIndex);
+                    // skip list
+                    skipList.add(lookAheadIndex);
+                }
+            }
+
+            lookAheadIndex++;
+
+            if (lookAheadIndex >= currentTrack.size()) {
+                // avoid out of bounds
+                break;
+            }
+
+            lookAheadEvent = currentTrack.get(lookAheadIndex);
+            lookAheadTickTime = lookAheadEvent.getTick();
         }
 
         // This note is currently playing, push to stack
@@ -163,8 +226,11 @@ public class MidiFileParser {
             // if there are no notes playing, calculate a rest to fill the time between now and the last note off
             long restTime = eventTickTime - lastNoteAction;
 
-            for (Voice v: voices) {
-                v.addNote(new Rest(ticksToApproxDuration(restTime)));
+            // restTime can be 0 (or fuzzed threshold) if on/off are on same tick
+            if (restTime > 0) {
+                for (Voice v: voices) {
+                    v.addNote(new Rest(ticksToApproxDuration(restTime)));
+                }
             }
         }
 
@@ -196,7 +262,7 @@ public class MidiFileParser {
         System.out.println("Note on, " + noteName + octave + " key=" + key + " velocity: " + velocity);
     }
 
-    private void processNoteOff(long eventTickTime, ShortMessage sm) {
+    private void processNoteOff(long eventTickTime, ShortMessage sm, Track currentTrack, int currentIndex) {
         int key = sm.getData1();
         int octave = (key / 12) - 1;
         int note = key % 12;

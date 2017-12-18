@@ -11,7 +11,7 @@ public class SequencerTest {
     public static void main(String[] args) throws MidiUnavailableException, InvalidMidiDataException, IOException {
         Sequencer s = MidiSystem.getSequencer();
         Sequence furElise = MidiSystem.getSequence(new File("bin/midifiles/for_elise_by_beethoven.mid"));
-        Sequence basic1 = MidiSystem.getSequence(new File("bin/midifiles/test/basic_0.mid"));
+        Sequence basic1 = MidiSystem.getSequence(new File("bin/midifiles/test/basic_2.mid"));
 
         s.open();
         s.setSequence(basic1);

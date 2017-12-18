@@ -40,6 +40,11 @@ public class Voice {
         this.melody = Voice.parseVoiceString(voiceString).melody;
     }
 
+    public Voice(String voiceString, int index) {
+        this.melody = Voice.parseVoiceString(voiceString).melody;
+        this.index = index;
+    }
+
     /**
      * Create a Voice out of multiple Note strings of the form [notestring],[notestring],[notestring]...
      *
