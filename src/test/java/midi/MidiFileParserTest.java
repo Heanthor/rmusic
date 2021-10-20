@@ -26,7 +26,7 @@ public class MidiFileParserTest {
     private File basic6 = null;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         basic0 = new File("bin/midifiles/test/test_basicnotes.mid");
         basic1 = new File("bin/midifiles/test/test_simplemelody.mid");
         basic2 = new File("bin/midifiles/test/test_multiplevoices.mid");
@@ -34,7 +34,6 @@ public class MidiFileParserTest {
         basic4 = new File("bin/midifiles/test/test_multiplevoicesrest.mid");
         basic5 = new File("bin/midifiles/test/test_chordrests.mid");
         basic6 = new File("bin/midifiles/test/test_repeatednotes.mid");
-
     }
 
     @Test
@@ -58,7 +57,7 @@ public class MidiFileParserTest {
                         new Voice("C4:H", 0),
                         new Voice("R:E,E4:Qd", 1),
                         new Voice("R:Q,G4:Q", 2),
-                        new Voice("R:Hd,C5:E", 3)}
+                        new Voice("R:Qd,C5:E", 3)}
         ));
     }
 
@@ -74,17 +73,18 @@ public class MidiFileParserTest {
         testMidi(basic4, new Staff(new Tempo(110), null, new TimeSignature("C"),
                 new Voice[]{
                         new Voice("D4:H,R:E,D#4:Qd", 0),
-                        new Voice("D#4:E,R:Qd,D4:Q", 1)}
+                        new Voice("R:Q,D#4:E,R:Qd,D4:Q", 1)}
         ));
     }
 
     @Test
     public void testChordsRests() {
+        // TODO should midi sort voices by octave to keep lower voices in the bass always?
         testMidi(basic5, new Staff(new Tempo(110), null, new TimeSignature("C"),
                 new Voice[]{
                         new Voice("F4:Q,R:Q,F4:E,R:E,F4:E", 0),
-                        new Voice("D4:Q,R:Q,D4:E,R:E,D4:E", 1),
-                        new Voice("B3:Q,R:Q,B3:E,R:E,B3:E", 2),
+                        new Voice("B3:Q,R:Q,B3:E,R:E,B3:E", 1),
+                        new Voice("D4:Q,R:Q,D4:E,R:E,D4:E", 2),
                         new Voice("G3:Q,R:Q,G3:E,R:E,G3:E", 3)}
         ));
     }

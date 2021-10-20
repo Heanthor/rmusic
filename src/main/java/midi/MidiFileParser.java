@@ -78,6 +78,31 @@ public class MidiFileParser {
     private ArrayList<Integer> skipList;
 
     /**
+     * Container which holds start and end absolute tick time for a Note.
+     */
+    private static class MidiNote {
+        long tickStart;
+        long tickEnd;
+        Note note;
+
+        public MidiNote(long tickStart, long tickEnd, Note note) {
+            this.tickStart = tickStart;
+            this.tickEnd = tickEnd;
+            this.note = note;
+        }
+    }
+
+    /**
+     * Map of note start tick time to actual note
+     */
+    private Map<Long, List<MidiNote>> noteMap;
+    /**
+     * List of all times when a note starts.
+     * These will be in chronological order and should be traversed back to front.
+     */
+    private List<Long> allNoteTimes;
+
+    /**
      * Parse a midi file into a Staff. Attempts to match event time intervals to the closest note value this program can model.
      *
      * @param f A File object representing a .midi file.
@@ -88,7 +113,74 @@ public class MidiFileParser {
     public Staff loadAndParseFile(File f) throws InvalidMidiDataException, IOException {
         Sequence sequence = MidiSystem.getSequence(f);
 
-        return parseMidiFile(sequence);
+        Staff staff = parseMidiFile(sequence);
+        Staff s2 = parseIntermediate();
+
+        return s2;
+    }
+
+    private Staff parseIntermediate() {
+        // each voice has a tick time which represents the end of the last note
+        var voiceTimes = new ArrayList<Long>();
+        voiceTimes.add((long) 0);
+
+        for (var entry: noteMap.entrySet()) {
+            long eventTime = entry.getKey();
+            var notesAtTime = entry.getValue();
+
+            for (int i = 0; i < notesAtTime.size(); i++) {
+                MidiNote n = notesAtTime.get(i);
+                if (voices.size() <= i) {
+                    // we have multiple notes starting on the same time, and voices are not allocated
+                    // add a new one
+                    addVoice(voiceTimes, i, n);
+
+                    voices.get(i).addNote(n.note);
+                    voiceTimes.set(i, n.tickEnd);
+                    continue;
+                }
+
+                boolean placed = false;
+                for (int j = 0; j < voices.size() && !placed; j++) {
+                    if (voiceTimes.get(j) <= n.tickStart) {
+                        // this voice is active but has no note playing. catch up the voice and add the note
+                        Voice v = voices.get(j);
+                        // check if we need to insert a rest
+                        long restDur = eventTime - voiceTimes.get(j);
+
+                        if (restDur > 0) {
+                            v.addNote(new Rest(ticksToApproxDuration(restDur)));
+                        }
+
+                        v.addNote(n.note);
+                        voiceTimes.set(j, n.tickEnd);
+                        placed = true;
+                    }
+                }
+
+                // all voices had active notes on them, so we need to add and catch up another
+                if (!placed) {
+                    int vIndex = voices.size();
+                    addVoice(voiceTimes, vIndex, n);
+
+                    voices.get(vIndex).addNote(n.note);
+                    voiceTimes.set(vIndex, n.tickEnd);
+                }
+            }
+        }
+
+        return new Staff(fileTempo, timeSignature, voices);
+    }
+
+    private void addVoice(List<Long> voiceTimes, int index, MidiNote note) {
+        Voice v = new Voice(new ArrayList<>(), index);
+        voices.add(v);
+
+        if (note.tickStart > 0) {
+            v.addNote(new Rest(ticksToApproxDuration(note.tickStart)));
+        }
+
+        voiceTimes.add(note.tickStart);
     }
 
     private Staff parseMidiFile(Sequence sequence) {
@@ -103,6 +195,9 @@ public class MidiFileParser {
         soundingNotes = new HashMap<>();
 
         voices = new ArrayList<>();
+        noteMap = new HashMap<>();
+        allNoteTimes = new ArrayList<>();
+
         // add primary voice
         voices.add(new Voice(new ArrayList<>()));
 
@@ -114,24 +209,6 @@ public class MidiFileParser {
 
             skipList = new ArrayList<>(track.size());
 
-//            // TODO parse into datastructure where events with same tick time are grouped together
-//            // <tickTime> <list of indexes of events at tick>
-//            HashMap<Long, ArrayList<Integer>> eventsAtTick = new HashMap<>();
-//
-//            for (int i = 0; i < track.size(); i++) {
-//                long tick = track.get(i).getTick();
-//
-//                ArrayList<Integer> events;
-//                if ((events = eventsAtTick.get(tick)) != null) {
-//                    events.add(i);
-//                    eventsAtTick.put(tick, events);
-//                } else {
-//                    ArrayList<Integer> temp = new ArrayList<>();
-//                    temp.add(i);
-//                    eventsAtTick.put(tick, temp);
-//                }
-//            }
-
             for (int i = 0; i < track.size(); i++) {
                 MidiEvent event = track.get(i);
                 long tickTime = event.getTick();
@@ -139,15 +216,15 @@ public class MidiFileParser {
                 MidiMessage message = event.getMessage();
 
                 // Channel voice, channel mode, system common, system realtime
-                if (message instanceof ShortMessage) {
-                    ShortMessage sm = (ShortMessage) message;
-
+                if (message instanceof ShortMessage sm) {
                     System.out.print("Channel: " + sm.getChannel() + " ");
 
                     if (sm.getCommand() == ShortMessage.NOTE_ON) {
-                        processNoteOn(tickTime, sm, track, i);
+//                        processNoteOn(tickTime, sm, track, i);
+                        processNoteOn2(tickTime, sm);
                     } else if (sm.getCommand() == ShortMessage.NOTE_OFF && !skipList.contains(i)) {
-                        processNoteOff(tickTime, sm, track, i);
+//                        processNoteOff(tickTime, sm, track, i);
+                        processNoteOff2(tickTime, sm);
                     } else {
                         System.out.println("Command: " + sm.getCommand());
                     }
@@ -168,7 +245,7 @@ public class MidiFileParser {
         return new Staff(fileTempo, timeSignature, voices);
     }
 
-    private void processNoteOn(long eventTickTime, ShortMessage sm, Track currentTrack, int currentIndex) {
+    private void processNoteOn2(long eventTickTime, ShortMessage sm) {
         int key = sm.getData1();
         int octave = (key / 12) - 1;
         int note = key % 12;
@@ -177,13 +254,75 @@ public class MidiFileParser {
 
         // some midi files encode a NOTE_OFF event as NOTE_ON with velocity 0
         if (velocity == 0) {
-            processNoteOff(eventTickTime, sm, currentTrack, currentIndex);
+            processNoteOff2(eventTickTime, sm);
+            return;
+        }
+
+        String noteString = noteName + octave + ":N";
+        Note tmpNote = new Note(noteString);
+
+        if (noteMap.containsKey(eventTickTime)) {
+            noteMap.get(eventTickTime).add(new MidiNote(eventTickTime, 0, tmpNote));
+        } else {
+            ArrayList<MidiNote> noteArrayList = new ArrayList<>();
+            noteArrayList.add(new MidiNote(eventTickTime, 0, tmpNote));
+            noteMap.put(eventTickTime, noteArrayList);
+        }
+
+        if (!allNoteTimes.contains(eventTickTime)) {
+            allNoteTimes.add(eventTickTime);
+        }
+
+        System.out.println("Note on, " + noteName + octave + " key=" + key + " velocity: " + velocity);
+    }
+
+    private void processNoteOff2(long eventTickTime, ShortMessage sm) {
+        int key = sm.getData1();
+        int octave = (key / 12) - 1;
+        int note = key % 12;
+        String noteName = NOTE_NAMES[note];
+        int velocity = sm.getData2();
+
+        // Create a note equal to stored one, to get its value
+        String noteString = noteName + octave + ":N";
+        Note temp = new Note(noteString);
+
+        // find the starting event for this note and calculate its duration
+        // move backwards from the current time and "pop" times off to look for the starting event
+
+        ListIterator<Long> iter = allNoteTimes.listIterator(allNoteTimes.size());
+        while (iter.hasPrevious()) {
+            long ett = iter.previous();
+
+            var notes = noteMap.get(ett);
+            for (MidiNote n : notes) {
+                if (n.note.equals(temp)) {
+                    long noteTicks = eventTickTime - ett;
+                    Duration approxDuration = ticksToApproxDuration(noteTicks);
+
+                    n.note.setDuration(approxDuration);
+                    n.tickEnd = eventTickTime;
+                }
+            }
+        }
+    }
+
+    private void processNoteOn(long eventTickTime, ShortMessage sm, Track currentTrack, int eventIndex) {
+        int key = sm.getData1();
+        int octave = (key / 12) - 1;
+        int note = key % 12;
+        String noteName = NOTE_NAMES[note];
+        int velocity = sm.getData2();
+
+        // some midi files encode a NOTE_OFF event as NOTE_ON with velocity 0
+        if (velocity == 0) {
+            processNoteOff(eventTickTime, sm, currentTrack, eventIndex);
             return;
         }
 
         // before processing this note, seek forward and check for any NOTE_OFF at the same tickTime
         // do this so that out of order events on the same ms tick do not mess up voicing
-        int lookAheadIndex = currentIndex + 1;
+        int lookAheadIndex = eventIndex + 1;
         long lookAheadTickTime = -1;
 
         // get the tick time of the next event in sequence first
@@ -196,9 +335,7 @@ public class MidiFileParser {
         while (lookAheadTickTime == eventTickTime && lookAheadEvent != null) {
             MidiMessage message = lookAheadEvent.getMessage();
 
-            if (message instanceof ShortMessage) {
-                ShortMessage tmp = (ShortMessage) message;
-
+            if (message instanceof ShortMessage tmp) {
                 if (tmp.getCommand() == ShortMessage.NOTE_OFF) {
                     processNoteOff(lookAheadTickTime, tmp, currentTrack, lookAheadIndex);
                     // skip list
@@ -228,7 +365,7 @@ public class MidiFileParser {
 
             // restTime can be 0 (or fuzzed threshold) if on/off are on same tick
             if (restTime > 0) {
-                for (Voice v: voices) {
+                for (Voice v : voices) {
                     v.addNote(new Rest(ticksToApproxDuration(restTime)));
                 }
             }
@@ -436,13 +573,13 @@ public class MidiFileParser {
     /* Helper methods for MIDI file parsing */
 
     private String decimalToString(int[] bytes) {
-        String toReturn = "";
+        StringBuilder toReturn = new StringBuilder();
 
         for (int rawChar : bytes) {
-            toReturn += (char) rawChar;
+            toReturn.append((char) rawChar);
         }
 
-        return toReturn;
+        return toReturn.toString();
     }
 
     private int bigEndianByteArrayToDecimal(byte[] in) {
