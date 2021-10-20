@@ -27,13 +27,13 @@ public class MidiFileParserTest {
 
     @Before
     public void setUp() throws Exception {
-        basic0 = new File("bin/midifiles/test/basic_0.mid");
-        basic1 = new File("bin/midifiles/test/basic_1.mid");
-        basic2 = new File("bin/midifiles/test/basic_2.mid");
-        basic3 = new File("bin/midifiles/test/basic_3.mid");
-        basic4 = new File("bin/midifiles/test/basic_4.mid");
-        basic5 = new File("bin/midifiles/test/basic_5.mid");
-        basic6 = new File("bin/midifiles/test/basic_6.mid");
+        basic0 = new File("bin/midifiles/test/test_basicnotes.mid");
+        basic1 = new File("bin/midifiles/test/test_simplemelody.mid");
+        basic2 = new File("bin/midifiles/test/test_multiplevoices.mid");
+        basic3 = new File("bin/midifiles/test/test_singlevoiceoctaves.mid");
+        basic4 = new File("bin/midifiles/test/test_multiplevoicesrest.mid");
+        basic5 = new File("bin/midifiles/test/test_chordrests.mid");
+        basic6 = new File("bin/midifiles/test/test_repeatednotes.mid");
 
     }
 
