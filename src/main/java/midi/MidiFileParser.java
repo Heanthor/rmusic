@@ -34,11 +34,6 @@ public class MidiFileParser {
     private static final String[] NOTE_NAMES = {"C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"};
 
     /**
-     * Currently active channel - changes during execution!
-     */
-    private int channelNumber = -1;
-
-    /**
      * Represents the current tempo of the parsed file. Defaults to quarter = 120bpm.
      */
     private Tempo fileTempo = new Tempo(120);
@@ -51,31 +46,11 @@ public class MidiFileParser {
      * number of ticks per quarter note in ppq
      */
     private float resolution;
-    /**
-     * Note, time it started sounding.
-     */
-    private Map<Note, Long> soundingNotes;
+
     /**
      * Dynamically grow based on need for more voices
      */
     private ArrayList<Voice> voices;
-
-    /**
-     * Tick when the last note event was found.
-     * Used to determine when to insert rests on all voices.
-     */
-    private long lastNoteAction = 0;
-
-    /**
-     * Track number of processed notes
-     */
-    private int noteNum = 0;
-
-    /**
-     * List of indices to be skipped on the current track.
-     * Reset during parsing (once per track)
-     */
-    private ArrayList<Integer> skipList;
 
     /**
      * Container which holds start and end absolute tick time for a Note.
@@ -113,13 +88,16 @@ public class MidiFileParser {
     public Staff loadAndParseFile(File f) throws InvalidMidiDataException, IOException {
         Sequence sequence = MidiSystem.getSequence(f);
 
-        Staff staff = parseMidiFile(sequence);
-        Staff s2 = parseIntermediate();
+        parseMidiFile(sequence);
 
-        return s2;
+        return midiToStaff();
     }
 
-    private Staff parseIntermediate() {
+    /**
+     * Transforms internal midi state into a Staff.
+     * @return Staff representing the parsed contents of the midi file.
+     */
+    private Staff midiToStaff() {
         // each voice has a tick time which represents the end of the last note
         var voiceTimes = new ArrayList<Long>();
         voiceTimes.add((long) 0);
@@ -188,7 +166,7 @@ public class MidiFileParser {
         voiceTimes.add(note.tickStart);
     }
 
-    private Staff parseMidiFile(Sequence sequence) {
+    private void parseMidiFile(Sequence sequence) {
         if (sequence.getDivisionType() != Sequence.PPQ) {
             System.err.println("Can't parse this MIDI format into notes!");
             System.exit(-1);
@@ -197,7 +175,6 @@ public class MidiFileParser {
         resolution = sequence.getResolution();
 
         int trackNumber = 0;
-        soundingNotes = new HashMap<>();
 
         voices = new ArrayList<>();
         noteMap = new HashMap<>();
@@ -212,8 +189,6 @@ public class MidiFileParser {
             System.out.println("Track " + trackNumber + ": size = " + track.size());
             System.out.println();
 
-            skipList = new ArrayList<>(track.size());
-
             for (int i = 0; i < track.size(); i++) {
                 MidiEvent event = track.get(i);
                 long tickTime = event.getTick();
@@ -226,7 +201,7 @@ public class MidiFileParser {
 
                     if (sm.getCommand() == ShortMessage.NOTE_ON) {
                         processNoteOn2(tickTime, sm);
-                    } else if (sm.getCommand() == ShortMessage.NOTE_OFF && !skipList.contains(i)) {
+                    } else if (sm.getCommand() == ShortMessage.NOTE_OFF) {
                         processNoteOff2(tickTime, sm);
                     } else {
                         System.out.println("Command: " + sm.getCommand());
@@ -244,8 +219,6 @@ public class MidiFileParser {
 
             System.out.println();
         }
-
-        return new Staff(fileTempo, timeSignature, voices);
     }
 
     private void processNoteOn2(long eventTickTime, ShortMessage sm) {
@@ -327,166 +300,6 @@ public class MidiFileParser {
 
     }
 
-    @Deprecated
-    private void processNoteOn(long eventTickTime, ShortMessage sm, Track currentTrack, int eventIndex) {
-        int key = sm.getData1();
-        int octave = (key / 12) - 1;
-        int note = key % 12;
-        String noteName = NOTE_NAMES[note];
-        int velocity = sm.getData2();
-
-        // some midi files encode a NOTE_OFF event as NOTE_ON with velocity 0
-        if (velocity == 0) {
-            processNoteOff(eventTickTime, sm, currentTrack, eventIndex);
-            return;
-        }
-
-        // before processing this note, seek forward and check for any NOTE_OFF at the same tickTime
-        // do this so that out of order events on the same ms tick do not mess up voicing
-        int lookAheadIndex = eventIndex + 1;
-        long lookAheadTickTime = -1;
-
-        // get the tick time of the next event in sequence first
-        MidiEvent lookAheadEvent = null;
-        if (lookAheadIndex < currentTrack.size()) {
-            lookAheadEvent = currentTrack.get(lookAheadIndex);
-            lookAheadTickTime = lookAheadEvent.getTick();
-        } // else, skip this process since there are no more events to check
-
-        while (lookAheadTickTime == eventTickTime && lookAheadEvent != null) {
-            MidiMessage message = lookAheadEvent.getMessage();
-
-            if (message instanceof ShortMessage tmp) {
-                if (tmp.getCommand() == ShortMessage.NOTE_OFF) {
-                    processNoteOff(lookAheadTickTime, tmp, currentTrack, lookAheadIndex);
-                    // skip list
-                    skipList.add(lookAheadIndex);
-                }
-            }
-
-            lookAheadIndex++;
-
-            if (lookAheadIndex >= currentTrack.size()) {
-                // avoid out of bounds
-                break;
-            }
-
-            lookAheadEvent = currentTrack.get(lookAheadIndex);
-            lookAheadTickTime = lookAheadEvent.getTick();
-        }
-
-        // This note is currently playing, push to stack
-        // Give note a temporary quarter note time, this will change
-        String noteString = noteName + octave + ":N";
-        Note temp = new Note(noteString);
-
-        if (noteNum > 0 && soundingNotes.size() == 0) {
-            // if there are no notes playing, calculate a rest to fill the time between now and the last note off
-            long restTime = eventTickTime - lastNoteAction;
-
-            // restTime can be 0 (or fuzzed threshold) if on/off are on same tick
-            if (restTime > 0) {
-                for (Voice v : voices) {
-                    v.addNote(new Rest(ticksToApproxDuration(restTime)));
-                }
-            }
-        }
-
-        // Push note with dummy duration to voice arrays, to lock in its position
-        // notes are added to available voices as needed, or a new voice is added
-        int voiceToPlayIndex = soundingNotes.size();
-
-        if (voices.size() <= voiceToPlayIndex) {
-            // Allocate a new voice
-            Voice v = new Voice(new ArrayList<>(), voices.size());
-            // Fill rests up to the current duration
-            catchUpVoices(voices.get(0), v);
-
-            // add note that created new voice
-            v.addNote(temp);
-
-            // and add the voice
-            voices.add(v);
-        } else {
-            // Give the lowest voice the note
-            Voice v = voices.get(voiceToPlayIndex);
-
-            // then add note
-            v.addNote(temp);
-        }
-
-        soundingNotes.put(temp, eventTickTime);
-
-        System.out.println("Note on, " + noteName + octave + " key=" + key + " velocity: " + velocity);
-    }
-
-    @Deprecated
-    private void processNoteOff(long eventTickTime, ShortMessage sm, Track currentTrack, int currentIndex) {
-        int key = sm.getData1();
-        int octave = (key / 12) - 1;
-        int note = key % 12;
-        String noteName = NOTE_NAMES[note];
-        int velocity = sm.getData2();
-
-        // Create a note equal to stored one, to get its value
-        String noteString = noteName + octave + ":N";
-        Note temp = new Note(noteString);
-
-        // Find the associated closing event for this note, and calculate its duration
-        // Remove it as well, since it is no longer sounding
-        long startTime;
-        if (soundingNotes.containsKey(temp)) {
-            startTime = soundingNotes.remove(temp);
-        } else {
-            return;
-        }
-
-        long noteTicks = eventTickTime - startTime;
-        Duration approxDuration = ticksToApproxDuration(noteTicks);
-
-        // Have all info about note, calculate timing
-        boolean done = false;
-        Voice voiceAddedTo = null;
-
-        for (Voice v : voices) {
-            if (!done) {
-                for (int j = v.size() - 1; j >= 0; j--) {
-                    // Find (best guess) temporary note corresponding to this one
-                    BasicNote temp2 = v.getNote(j);
-                    if (temp2.equals(temp)) {
-                        temp2.setDuration(approxDuration);
-                        done = true;
-                        voiceAddedTo = v;
-
-                        break;
-                    }
-                }
-            }
-        }
-
-        // catch all voices up to voice 0
-        for (Voice v : voices) {
-            // if any sounding note's duration is not known, do not catch up voices
-            boolean unknown = false;
-
-            for (BasicNote n : v.melody) {
-                if (n.getDuration().equals(new Duration(Duration.DurationValue.NULL, false))) {
-                    unknown = true;
-                    break;
-                }
-            }
-
-            if (!unknown) {
-                catchUpVoices(voiceAddedTo, v);
-            }
-        }
-
-        lastNoteAction = eventTickTime;
-        noteNum++;
-
-        System.out.println("Note off, " + noteName + octave + " key=" + key + " velocity: " + velocity);
-    }
-
     private Duration ticksToApproxDuration(long noteTicks) {
         double fractionOfQuarterNote = roundDoubleToCleanFraction(noteTicks / resolution);
         return Duration.getDurationByRatio(new Duration("Q"), fractionOfQuarterNote);
@@ -530,7 +343,6 @@ public class MidiFileParser {
             System.out.println("Track name: " + decimalToString(hexBytes));
         } else if (message.getType() == CHANNEL_PREFIX) {
             // Might be unused, if channel info can be extracted from command message status
-            channelNumber = hexBytes[0];
         } else if (message.getType() == END_OF_TRACK) {
             System.out.println("End of track.");
         } else if (message.getType() == COPYRIGHT_NOTICE) {
