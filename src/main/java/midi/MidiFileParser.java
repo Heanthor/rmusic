@@ -340,8 +340,13 @@ public class MidiFileParser {
         } else if (message.getType() == KEY_SIGNATURE) {
             boolean major = hexBytes[1] == 0;
             boolean sharps = hexBytes[0] > 0;
-            Key keySignature = new KeySignature(hexBytes[0], sharps, major).getKey();
-            System.out.println("Key signature: " + keySignature.toString());
+
+            if (hexBytes[0] > 7 || hexBytes[0] < -7) {
+                System.out.println("Unable to determine key signature");
+            } else {
+                Key keySignature = new KeySignature(hexBytes[0], sharps, major).getKey();
+                System.out.println("Key signature: " + keySignature.toString());
+            }
         } else if (message.getType() == TRACK_NAME) {
             System.out.println("Track name: " + decimalToString(hexBytes));
         } else if (message.getType() == CHANNEL_PREFIX) {

@@ -70,6 +70,7 @@ public class PlaySoundMidi {
 //            Staff s = parser.loadAndParseFile(new File("bin/midifiles/tchop35a.mid"));
 //            Staff s = parser.loadAndParseFile(new File("bin/midifiles/mz_331_1.mid"));
             Staff s = parser.loadAndParseFile(new File("bin/midifiles/bwv1006/vp3-3gav.mid"));
+//            Staff s = parser.loadAndParseFile(new File("bin/midifiles/bwv1004/vp2-1all.mid"));
 //            Staff s = parser.loadAndParseFile(new File("bin/midifiles/test/test_longrest.mid"));
             System.out.println(s);
             m.playStaff(s);
