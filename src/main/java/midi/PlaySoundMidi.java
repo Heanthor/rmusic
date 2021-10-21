@@ -68,7 +68,8 @@ public class PlaySoundMidi {
 //            m.playStaff(mozartK545);
 //            Staff s = parser.loadAndParseFile(new File("bin/midifiles/for_elise_by_beethoven.mid"));
 //            Staff s = parser.loadAndParseFile(new File("bin/midifiles/tchop35a.mid"));
-            Staff s = parser.loadAndParseFile(new File("bin/midifiles/mz_331_1.mid"));
+//            Staff s = parser.loadAndParseFile(new File("bin/midifiles/mz_331_1.mid"));
+            Staff s = parser.loadAndParseFile(new File("bin/midifiles/bwv1006/vp3-3gav.mid"));
 //            Staff s = parser.loadAndParseFile(new File("bin/midifiles/test/test_longrest.mid"));
             System.out.println(s);
             m.playStaff(s);

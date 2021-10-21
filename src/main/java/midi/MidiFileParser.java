@@ -323,7 +323,10 @@ public class MidiFileParser {
             System.out.printf("Tempo marking: %d bpm\n", bpm);
 
             // save file tempo
-            fileTempo = new Tempo(bpm);
+            // only save the first instance, though this might be fragile
+            if (fileTempo.bpm == 120) {
+                fileTempo = new Tempo(bpm);
+            }
         } else if (message.getType() == TIME_SIGNATURE) {
             int numerator = hexBytes[0];
             int denominator = (int) Math.pow(2, hexBytes[1]);
