@@ -32,7 +32,7 @@ public class PlaySoundMidi {
 
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         PlaySoundMidi m = new PlaySoundMidi();
         MidiFileParser parser = new MidiFileParser();
         Tempo t = new Tempo(Tempo.CommonTempos.ALLEGRO);
@@ -64,14 +64,12 @@ public class PlaySoundMidi {
                 new TimeSignature(4, TimeSignature.DenominatorChoices._4),
                 new Voice[]{new Voice(notes)});
 
-        //m.playStaff(mozartK545);
-//        new Thread(() -> {
-//            m.playStaff(mozartK545);
-//        }).start();
         try {
-            Staff s = parser.loadAndParseFile(new File("bin/midifiles/for_elise_by_beethoven.mid"));
-            //Staff s = parser.loadAndParseFile(new File("bin/midifiles/tchop35a.mid"));
-            //Staff s = parser.loadAndParseFile(new File("bin/midifiles/mz_331_1.mid"));
+//            m.playStaff(mozartK545);
+//            Staff s = parser.loadAndParseFile(new File("bin/midifiles/for_elise_by_beethoven.mid"));
+//            Staff s = parser.loadAndParseFile(new File("bin/midifiles/tchop35a.mid"));
+            Staff s = parser.loadAndParseFile(new File("bin/midifiles/mz_331_1.mid"));
+//            Staff s = parser.loadAndParseFile(new File("bin/midifiles/test/test_longrest.mid"));
             System.out.println(s);
             m.playStaff(s);
         } catch (InvalidMidiDataException | IOException | InterruptedException e) {

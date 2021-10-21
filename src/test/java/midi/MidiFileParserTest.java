@@ -85,8 +85,8 @@ public class MidiFileParserTest {
         testMidi(basic5, new Staff(new Tempo(110), null, new TimeSignature("C"),
                 new Voice[]{
                         new Voice("F4:Q,R:Q,F4:E,R:E,F4:E", 0),
-                        new Voice("B3:Q,R:Q,B3:E,R:E,B3:E", 1),
-                        new Voice("D4:Q,R:Q,D4:E,R:E,D4:E", 2),
+                        new Voice("D4:Q,R:Q,D4:E,R:E,D4:E", 1),
+                        new Voice("B3:Q,R:Q,B3:E,R:E,B3:E", 2),
                         new Voice("G3:Q,R:Q,G3:E,R:E,G3:E", 3)}
         ));
     }

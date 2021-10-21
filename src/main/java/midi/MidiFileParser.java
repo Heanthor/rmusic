@@ -177,6 +177,7 @@ public class MidiFileParser {
 
         if (note.tickStart > 0) {
             long ts = note.tickStart;
+            // catch the new voice up with rests
             while (ts > 0) {
                 Duration d = ticksToApproxDuration(ts);
                 v.addNote(new Rest(d));
@@ -264,15 +265,22 @@ public class MidiFileParser {
         Note tmpNote = new Note(noteString);
 
         if (noteMap.containsKey(eventTickTime)) {
-            // TODO
-//            // add highest notes to the top of the list if possible
-//            var nm = noteMap.get(eventTickTime);
-//            for (int i = 0; i < nm.size(); i++) {
-//                if (nm.get(i).note.compareTo(tmpNote) <= 0) {
-//                    nm.add(i, new MidiNote(eventTickTime, 0, tmpNote));
-//                }
-//            }
-            noteMap.get(eventTickTime).add(new MidiNote(eventTickTime, 0, tmpNote));
+            // add highest notes to the top of the list if possible
+            var nm = noteMap.get(eventTickTime);
+            boolean placed = false;
+
+            for (int i = 0; i < nm.size(); i++) {
+                if (nm.get(i).note.compareTo(tmpNote) <= 0) {
+                    nm.add(i, new MidiNote(eventTickTime, 0, tmpNote));
+                    placed = true;
+                    break;
+                }
+            }
+
+            // place at end of list if not otherwise placed
+            if (!placed) {
+                nm.add(new MidiNote(eventTickTime, 0, tmpNote));
+            }
         } else {
             ArrayList<MidiNote> noteArrayList = new ArrayList<>();
             noteArrayList.add(new MidiNote(eventTickTime, 0, tmpNote));
