@@ -24,6 +24,7 @@ public class MidiFileParserTest {
     private File basic4 = null;
     private File basic5 = null;
     private File basic6 = null;
+    private File basic7 = null;
 
     @Before
     public void setUp() {
@@ -34,6 +35,7 @@ public class MidiFileParserTest {
         basic4 = new File("bin/midifiles/test/test_multiplevoicesrest.mid");
         basic5 = new File("bin/midifiles/test/test_chordrests.mid");
         basic6 = new File("bin/midifiles/test/test_repeatednotes.mid");
+        basic7 = new File("bin/midifiles/test/test_longrest.mid");
     }
 
     @Test
@@ -93,6 +95,17 @@ public class MidiFileParserTest {
     public void testRepeatedNotes() {
         testMidi(basic6, new Staff(new Tempo(110), null, new TimeSignature("C"),
                 new Voice[]{new Voice("D4:H,D4:E,D4:E,D4:S,D4:S,D4:S,D4:S")}
+        ));
+    }
+
+    @Test
+    public void testLongRest() {
+        // ensure that extra voices which need more than a whole note of rest wait long enough
+        testMidi(basic7, new Staff(new Tempo(110), null, new TimeSignature("C"),
+                new Voice[]{new Voice("D3:Q,D#3:Q,E3:Q,F3:Q,F#3:Q,G3:Q,A3:Q,B3:Q,C4:Q", 0),
+                            new Voice("R:W,D3:Q,E3:Q,F#3:Q,G3:Q,A3:Q", 1),
+                            new Voice("R:W,R:W,F#3:Q", 2),
+                            new Voice("R:W,R:W,D3:Q", 3)}
         ));
     }
 

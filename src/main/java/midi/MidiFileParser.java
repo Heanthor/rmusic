@@ -124,9 +124,8 @@ public class MidiFileParser {
         var voiceTimes = new ArrayList<Long>();
         voiceTimes.add((long) 0);
 
-        for (var entry: noteMap.entrySet()) {
-            long eventTime = entry.getKey();
-            var notesAtTime = entry.getValue();
+        for (long eventTime : allNoteTimes) {
+            var notesAtTime = noteMap.get(eventTime);
 
             for (int i = 0; i < notesAtTime.size(); i++) {
                 MidiNote n = notesAtTime.get(i);
@@ -177,7 +176,12 @@ public class MidiFileParser {
         voices.add(v);
 
         if (note.tickStart > 0) {
-            v.addNote(new Rest(ticksToApproxDuration(note.tickStart)));
+            long ts = note.tickStart;
+            while (ts > 0) {
+                Duration d = ticksToApproxDuration(ts);
+                v.addNote(new Rest(d));
+                ts -= durationToTicks(d);
+            }
         }
 
         voiceTimes.add(note.tickStart);
@@ -220,10 +224,8 @@ public class MidiFileParser {
                     System.out.print("Channel: " + sm.getChannel() + " ");
 
                     if (sm.getCommand() == ShortMessage.NOTE_ON) {
-//                        processNoteOn(tickTime, sm, track, i);
                         processNoteOn2(tickTime, sm);
                     } else if (sm.getCommand() == ShortMessage.NOTE_OFF && !skipList.contains(i)) {
-//                        processNoteOff(tickTime, sm, track, i);
                         processNoteOff2(tickTime, sm);
                     } else {
                         System.out.println("Command: " + sm.getCommand());
@@ -262,6 +264,14 @@ public class MidiFileParser {
         Note tmpNote = new Note(noteString);
 
         if (noteMap.containsKey(eventTickTime)) {
+            // TODO
+//            // add highest notes to the top of the list if possible
+//            var nm = noteMap.get(eventTickTime);
+//            for (int i = 0; i < nm.size(); i++) {
+//                if (nm.get(i).note.compareTo(tmpNote) <= 0) {
+//                    nm.add(i, new MidiNote(eventTickTime, 0, tmpNote));
+//                }
+//            }
             noteMap.get(eventTickTime).add(new MidiNote(eventTickTime, 0, tmpNote));
         } else {
             ArrayList<MidiNote> noteArrayList = new ArrayList<>();
@@ -281,7 +291,6 @@ public class MidiFileParser {
         int octave = (key / 12) - 1;
         int note = key % 12;
         String noteName = NOTE_NAMES[note];
-        int velocity = sm.getData2();
 
         // Create a note equal to stored one, to get its value
         String noteString = noteName + octave + ":N";
@@ -305,8 +314,12 @@ public class MidiFileParser {
                 }
             }
         }
+
+        System.out.println("Note off, " + noteName + octave + " key=" + key);
+
     }
 
+    @Deprecated
     private void processNoteOn(long eventTickTime, ShortMessage sm, Track currentTrack, int eventIndex) {
         int key = sm.getData1();
         int octave = (key / 12) - 1;
@@ -399,6 +412,7 @@ public class MidiFileParser {
         System.out.println("Note on, " + noteName + octave + " key=" + key + " velocity: " + velocity);
     }
 
+    @Deprecated
     private void processNoteOff(long eventTickTime, ShortMessage sm, Track currentTrack, int currentIndex) {
         int key = sm.getData1();
         int octave = (key / 12) - 1;
@@ -468,6 +482,10 @@ public class MidiFileParser {
     private Duration ticksToApproxDuration(long noteTicks) {
         double fractionOfQuarterNote = roundDoubleToCleanFraction(noteTicks / resolution);
         return Duration.getDurationByRatio(new Duration("Q"), fractionOfQuarterNote);
+    }
+
+    private long durationToTicks(Duration d) {
+        return (long)(d.getDoubleValue() * resolution * 4);
     }
 
     private void parseMetaMessage(MetaMessage message) {

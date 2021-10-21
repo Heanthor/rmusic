@@ -155,17 +155,12 @@ public class Note implements BasicNote, Comparable<Note> {
             // Note has modifications
             char modification = noteString.charAt(1);
 
-            switch (modification) {
-                case '#':
-                    mod = NoteValue.Accidental.SHARP;
-                    break;
-                case 'b':
-                    mod = NoteValue.Accidental.FLAT;
-                    break;
-                default:
-                    throw new IllegalArgumentException("Note string format incorrect (note modification incorrect). " +
-                            "Pick either: 'b' or '#'.");
-            }
+            mod = switch (modification) {
+                case '#' -> NoteValue.Accidental.SHARP;
+                case 'b' -> NoteValue.Accidental.FLAT;
+                default -> throw new IllegalArgumentException("Note string format incorrect (note modification incorrect). " +
+                        "Pick either: 'b' or '#'.");
+            };
 
             try {
                 oct = Octave.octaveFromInteger(Integer.parseInt("" + noteString.charAt(2)));
@@ -226,15 +221,11 @@ public class Note implements BasicNote, Comparable<Note> {
         String toReturn = basePitch.name();
 
         switch (accidental) {
-            case SHARP:
-                toReturn += "#";
-                break;
-            case FLAT:
-                toReturn += "b";
-                break;
-            default:
-                // Add nothing for natural
-                break;
+            case SHARP -> toReturn += "#";
+            case FLAT -> toReturn += "b";
+            default -> {
+            }
+            // Add nothing for natural
         }
 
         toReturn += octave.toString();
