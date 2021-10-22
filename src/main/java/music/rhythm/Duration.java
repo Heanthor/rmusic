@@ -438,6 +438,7 @@ public class Duration implements Comparable<Duration> {
 
     /**
      * Get this Duration's value as a double.
+     * This value is the decimal fraction of a whole note (quarter note = 0.25, half 0.5, etc).
      *
      * @return The double representation of this duration.
      */
